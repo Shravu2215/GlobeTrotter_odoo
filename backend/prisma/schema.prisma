@@ -1,0 +1,49 @@
+// ============================================
+// BASE SCHEMA — extend this once the domain (problem statement) is known.
+// User model is battle-tested: role assignment locked down server-side
+// (see auth.controller.js — never trust role from client body).
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER) // never set from client input directly
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// ============================================
+// EXAMPLE PATTERN — compound unique constraint done right
+// (last time a naive @@unique crashed on a legit second insert
+// because it didn't scope to the right combination of fields).
+// Delete this model once you add real domain models; keep the
+// pattern in mind: @@unique([fieldA, fieldB]) only on the fields
+// that TRULY must be unique together, not entity-wide.
+// ============================================
+// model Example {
+//   id        String   @id @default(uuid())
+//   userId    String
+//   itemId    String
+//   status    String
+//   createdAt DateTime @default(now())
+//
+//   @@unique([userId, itemId])
+// }
