@@ -13,14 +13,20 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: process.env.CLIENT_URL || "*", methods: ["GET", "POST"] },
-});
+cors: {
+  origin: process.env.CLIENT_URL,
+  methods: ["GET", "POST"],
+  credentials: true,
+},});
 
 // Make io accessible in controllers via req.app.get("io")
 app.set("io", io);
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || "*", credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));

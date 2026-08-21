@@ -17,7 +17,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await signup(name, email, password);
-      navigate("/");
+      navigate("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
     } finally {
@@ -51,12 +51,15 @@ export default function Signup() {
         />
         <input
           type="password"
-          placeholder="Password (min 6 chars)"
+          placeholder="Password (min 8 characters)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full bg-surfaceAlt border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           required
         />
+	<p className="text-xs text-muted">
+  	Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character.
+	</p>
         <button
           type="submit"
           disabled={loading}

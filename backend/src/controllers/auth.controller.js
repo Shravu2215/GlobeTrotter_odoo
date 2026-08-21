@@ -26,7 +26,7 @@ async function signup(req, res, next) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw new AppError("Email already registered", 409);
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
       data: { name, email, password: hashed, role: "USER" },
     });
