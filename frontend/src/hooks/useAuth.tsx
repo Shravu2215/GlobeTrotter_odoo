@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import api from "@/lib/api";
+import { authApi } from "@/api/auth";
 
 interface User {
   id: string;
@@ -28,21 +28,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    api
-      .get("/auth/me")
+    authApi.me()
       .then((res) => setUser(res.data.user))
       .catch(() => localStorage.removeItem("token"))
       .finally(() => setLoading(false));
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await api.post("/auth/login", { email, password });
+    const res = await authApi.login(email, password);
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
   }
 
   async function signup(name: string, email: string, password: string) {
-    const res = await api.post("/auth/signup", { name, email, password });
+    const res = await authApi.signup(name, email, password);
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
   }
