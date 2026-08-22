@@ -5,49 +5,62 @@ import { Plus, X, Search } from 'lucide-react';
 import { useTrip } from '@/hooks/useTrip';
 import SectionCard from '@/components/SectionCard';
 
+interface ActivityTemplate {
+  name: string;
+  category: string;
+  cost: number;
+  image: string;
+  time: string;
+  openTime: string;
+  closeTime: string;
+  operatingHours: string;
+  duration: string;
+  locationArea: string;
+}
+
 // City-specific activity pool keyed by lowercase city keywords
-const CITY_ACTIVITIES: Record<string, { name: string; category: string; cost: number; image: string; time: string }[]> = {
+const CITY_ACTIVITIES: Record<string, ActivityTemplate[]> = {
   paris: [
-    { name: "Eiffel Tower Tour",       category: "Sightseeing",  cost: 0,    time: "10:00 AM", image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=400" },
-    { name: "Louvre Museum",            category: "Museum",       cost: 1500, time: "02:00 PM", image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400" },
-    { name: "French Food Tour",         category: "Food",         cost: 2000, time: "01:00 PM", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
-    { name: "Seine River Cruise",       category: "Sightseeing",  cost: 1500, time: "05:00 PM", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
-    { name: "Musée d'Orsay",            category: "Museum",       cost: 1200, time: "11:00 AM", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Palace of Versailles",     category: "Historical",   cost: 2500, time: "09:00 AM", image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400" },
-    { name: "Notre Dame Cathedral",     category: "Historical",   cost: 0,    time: "03:00 PM", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
-    { name: "Montmartre Walking Tour",  category: "Sightseeing",  cost: 500,  time: "04:00 PM", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
-    { name: "Paris Wine Tasting",       category: "Food",         cost: 3000, time: "07:00 PM", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400" },
-    { name: "Arc de Triomphe",          category: "Sightseeing",  cost: 800,  time: "06:00 PM", image: "https://images.unsplash.com/photo-1471929873714-39fca87f8abf?w=400" },
-    { name: "Champs-Élysées Shopping",  category: "Shopping",     cost: 5000, time: "02:00 PM", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
-    { name: "Sainte-Chapelle Visit",    category: "Historical",   cost: 1100, time: "10:00 AM", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
+    { name: "Eiffel Tower Tour",       category: "Sightseeing", cost: 0,    time: "10:00 AM", openTime: "09:30 AM", closeTime: "11:45 PM", operatingHours: "09:30 AM – 11:45 PM", duration: "2.5 hrs", locationArea: "Champ de Mars, 7th Arr.", image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=400" },
+    { name: "Louvre Museum",           category: "Museum",      cost: 1500, time: "02:00 PM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "3.0 hrs", locationArea: "Rue de Rivoli, 1st Arr.", image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400" },
+    { name: "French Food Tour",        category: "Food",        cost: 2000, time: "01:00 PM", openTime: "11:30 AM", closeTime: "09:30 PM", operatingHours: "11:30 AM – 09:30 PM", duration: "2.5 hrs", locationArea: "Le Marais Quarter", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
+    { name: "Seine River Cruise",      category: "Sightseeing", cost: 1500, time: "05:00 PM", openTime: "10:00 AM", closeTime: "10:30 PM", operatingHours: "10:00 AM – 10:30 PM", duration: "1.5 hrs", locationArea: "Port de la Bourdonnais", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
+    { name: "Musée d'Orsay",           category: "Museum",      cost: 1200, time: "11:00 AM", openTime: "09:30 AM", closeTime: "06:00 PM", operatingHours: "09:30 AM – 06:00 PM", duration: "2.5 hrs", locationArea: "Esplanade d'Orsay, 7th Arr.", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
+    { name: "Palace of Versailles",    category: "Historical",  cost: 2500, time: "09:00 AM", openTime: "09:00 AM", closeTime: "05:30 PM", operatingHours: "09:00 AM – 05:30 PM", duration: "4.0 hrs", locationArea: "Place d'Armes, Versailles", image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400" },
+    { name: "Notre Dame Cathedral",    category: "Historical",  cost: 0,    time: "03:00 PM", openTime: "08:00 AM", closeTime: "06:45 PM", operatingHours: "08:00 AM – 06:45 PM", duration: "1.5 hrs", locationArea: "Île de la Cité, 4th Arr.", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
+    { name: "Montmartre Walking Tour", category: "Sightseeing", cost: 500,  time: "04:00 PM", openTime: "08:30 AM", closeTime: "08:00 PM", operatingHours: "08:30 AM – 08:00 PM", duration: "2.0 hrs", locationArea: "Place du Tertre, 18th Arr.", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
+    { name: "Paris Wine Tasting",      category: "Food",        cost: 3000, time: "07:00 PM", openTime: "05:00 PM", closeTime: "11:00 PM", operatingHours: "05:00 PM – 11:00 PM", duration: "2.0 hrs", locationArea: "Latin Quarter, 5th Arr.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400" },
+    { name: "Arc de Triomphe",         category: "Sightseeing", cost: 800,  time: "06:00 PM", openTime: "10:00 AM", closeTime: "10:30 PM", operatingHours: "10:00 AM – 10:30 PM", duration: "1.5 hrs", locationArea: "Place Charles de Gaulle, 8th Arr.", image: "https://images.unsplash.com/photo-1471929873714-39fca87f8abf?w=400" },
+    { name: "Champs-Élysées Shopping", category: "Shopping",    cost: 5000, time: "02:00 PM", openTime: "10:00 AM", closeTime: "08:00 PM", operatingHours: "10:00 AM – 08:00 PM", duration: "2.5 hrs", locationArea: "Avenue des Champs-Élysées", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
+    { name: "Sainte-Chapelle Visit",   category: "Historical",  cost: 1100, time: "10:00 AM", openTime: "09:00 AM", closeTime: "05:00 PM", operatingHours: "09:00 AM – 05:00 PM", duration: "1.5 hrs", locationArea: "Boulevard du Palais, 1st Arr.", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
   ],
   interlaken: [
-    { name: "Jungfraujoch — Top of Europe", category: "Adventure",   cost: 8000, time: "09:00 AM", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Lake Thun Boat Cruise",        category: "Sightseeing",  cost: 1200, time: "11:00 AM", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
-    { name: "Harder Kulm Viewpoint",        category: "Nature",       cost: 2500, time: "10:00 AM", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
-    { name: "Paragliding over Alps",        category: "Adventure",   cost: 12000,time: "01:00 PM", image: "https://images.unsplash.com/photo-1622738049484-1898e96ad7f3?w=400" },
-    { name: "Trummelbach Falls",            category: "Nature",       cost: 800,  time: "03:00 PM", image: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400" },
-    { name: "Schynige Platte Hike",         category: "Adventure",   cost: 3500, time: "08:00 AM", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Swiss Chocolate Workshop",     category: "Food",         cost: 2000, time: "02:00 PM", image: "https://images.unsplash.com/photo-1481391319764-ac6d90b0b54e?w=400" },
-    { name: "Lake Brienz Kayaking",         category: "Adventure",   cost: 2500, time: "10:00 AM", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
-    { name: "Lauterbrunnen Valley Walk",    category: "Nature",       cost: 0,    time: "09:00 AM", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
-    { name: "Grindelwald Glacier Tour",     category: "Nature",       cost: 4000, time: "08:00 AM", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Swiss Folk Museum",            category: "Museum",       cost: 600,  time: "01:00 PM", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Interlaken Old Town Stroll",   category: "Sightseeing",  cost: 0,    time: "04:00 PM", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
+    { name: "Jungfraujoch — Top of Europe", category: "Adventure",   cost: 8000, time: "09:00 AM", openTime: "08:00 AM", closeTime: "05:30 PM", operatingHours: "08:00 AM – 05:30 PM", duration: "5.0 hrs", locationArea: "Jungfrau Alpine Terminal", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
+    { name: "Lake Thun Boat Cruise",        category: "Sightseeing", cost: 1200, time: "11:00 AM", openTime: "09:30 AM", closeTime: "07:00 PM", operatingHours: "09:30 AM – 07:00 PM", duration: "2.0 hrs", locationArea: "Interlaken West Pier", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
+    { name: "Harder Kulm Viewpoint",        category: "Nature",      cost: 2500, time: "10:00 AM", openTime: "09:10 AM", closeTime: "09:40 PM", operatingHours: "09:10 AM – 09:40 PM", duration: "2.0 hrs", locationArea: "Harder Funicular Station", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
+    { name: "Paragliding over Alps",        category: "Adventure",   cost: 12000,time: "01:00 PM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "1.5 hrs", locationArea: "Höhematte Landing Field", image: "https://images.unsplash.com/photo-1622738049484-1898e96ad7f3?w=400" },
+    { name: "Trummelbach Falls",            category: "Nature",      cost: 800,  time: "03:00 PM", openTime: "09:00 AM", closeTime: "05:00 PM", operatingHours: "09:00 AM – 05:00 PM", duration: "2.0 hrs", locationArea: "Lauterbrunnen Valley", image: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400" },
+    { name: "Schynige Platte Hike",         category: "Adventure",   cost: 3500, time: "08:00 AM", openTime: "08:00 AM", closeTime: "05:00 PM", operatingHours: "08:00 AM – 05:00 PM", duration: "4.0 hrs", locationArea: "Wilderswil Alpine Rail", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
+    { name: "Swiss Chocolate Workshop",     category: "Food",        cost: 2000, time: "02:00 PM", openTime: "10:00 AM", closeTime: "06:30 PM", operatingHours: "10:00 AM – 06:30 PM", duration: "1.5 hrs", locationArea: "Höheweg Central Atelier", image: "https://images.unsplash.com/photo-1481391319764-ac6d90b0b54e?w=400" },
+    { name: "Lake Brienz Kayaking",         category: "Adventure",   cost: 2500, time: "10:00 AM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "2.5 hrs", locationArea: "Bönigen Beach", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
+    { name: "Lauterbrunnen Valley Walk",    category: "Nature",      cost: 0,    time: "09:00 AM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "2.5 hrs", locationArea: "Staubbach Falls Path", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
+    { name: "Grindelwald Glacier Tour",     category: "Nature",      cost: 4000, time: "08:00 AM", openTime: "08:30 AM", closeTime: "05:00 PM", operatingHours: "08:30 AM – 05:00 PM", duration: "3.5 hrs", locationArea: "Grindelwald Terminal", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
+    { name: "Swiss Folk Museum",            category: "Museum",      cost: 600,  time: "01:00 PM", openTime: "10:00 AM", closeTime: "05:00 PM", operatingHours: "10:00 AM – 05:00 PM", duration: "2.0 hrs", locationArea: "Ballenberg Open-Air", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
+    { name: "Interlaken Old Town Stroll",   category: "Sightseeing", cost: 0,    time: "04:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.5 hrs", locationArea: "Unterseen Square", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
   ],
   rome: [
-    { name: "Colosseum & Roman Forum",   category: "Historical",   cost: 1800, time: "10:00 AM", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "Vatican Museums & Sistine Chapel", category: "Museum", cost: 2000, time: "02:00 PM", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
-    { name: "Trevi Fountain Visit",       category: "Sightseeing",  cost: 0,    time: "10:00 AM", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Borghese Gallery",           category: "Museum",       cost: 1500, time: "09:00 AM", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Pantheon Tour",             category: "Historical",   cost: 500,  time: "11:00 AM", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "Roman Street Food Walk",    category: "Food",         cost: 1800, time: "12:00 PM", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
-    { name: "Trastevere Evening Walk",   category: "Sightseeing",  cost: 0,    time: "07:00 PM", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Piazza Navona",             category: "Sightseeing",  cost: 0,    time: "05:00 PM", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "St. Peter's Basilica",      category: "Historical",   cost: 0,    time: "09:00 AM", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
-    { name: "Pasta Making Class",        category: "Food",         cost: 3500, time: "02:00 PM", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
-    { name: "Campo de' Fiori Market",    category: "Shopping",     cost: 1000, time: "08:00 AM", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Appian Way Cycling",        category: "Adventure",   cost: 1200, time: "09:00 AM", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
+    { name: "Colosseum & Roman Forum",          category: "Historical", cost: 1800, time: "10:00 AM", openTime: "08:30 AM", closeTime: "07:00 PM", operatingHours: "08:30 AM – 07:00 PM", duration: "3.0 hrs", locationArea: "Piazza del Colosseo", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
+    { name: "Vatican Museums & Sistine Chapel", category: "Museum",     cost: 2000, time: "02:00 PM", openTime: "08:00 AM", closeTime: "06:00 PM", operatingHours: "08:00 AM – 06:00 PM", duration: "3.5 hrs", locationArea: "Viale Vaticano", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
+    { name: "Trevi Fountain Visit",              category: "Sightseeing", cost: 0,   time: "10:00 AM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.0 hr",  locationArea: "Piazza di Trevi", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
+    { name: "Borghese Gallery",                  category: "Museum",     cost: 1500, time: "09:00 AM", openTime: "09:00 AM", closeTime: "07:00 PM", operatingHours: "09:00 AM – 07:00 PM", duration: "2.5 hrs", locationArea: "Piazzale Scipione Borghese", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
+    { name: "Pantheon Tour",                    category: "Historical", cost: 500,  time: "11:00 AM", openTime: "09:00 AM", closeTime: "07:00 PM", operatingHours: "09:00 AM – 07:00 PM", duration: "1.5 hrs", locationArea: "Piazza della Rotonda", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
+    { name: "Roman Street Food Walk",           category: "Food",       cost: 1800, time: "12:00 PM", openTime: "11:00 AM", closeTime: "10:00 PM", operatingHours: "11:00 AM – 10:00 PM", duration: "2.5 hrs", locationArea: "Jewish Ghetto & Trastevere", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
+    { name: "Trastevere Evening Walk",          category: "Sightseeing", cost: 0,   time: "07:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "2.0 hrs", locationArea: "Piazza di Santa Maria", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
+    { name: "Piazza Navona",                    category: "Sightseeing", cost: 0,   time: "05:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.5 hrs", locationArea: "Historic Center", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
+    { name: "St. Peter's Basilica",             category: "Historical", cost: 0,    time: "09:00 AM", openTime: "07:00 AM", closeTime: "07:00 PM", operatingHours: "07:00 AM – 07:00 PM", duration: "2.0 hrs", locationArea: "Piazza San Pietro", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
+    { name: "Pasta Making Class",               category: "Food",       cost: 3500, time: "02:00 PM", openTime: "11:30 AM", closeTime: "09:00 PM", operatingHours: "11:30 AM – 09:00 PM", duration: "2.5 hrs", locationArea: "Via Cavour Culinary Loft", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
+    { name: "Campo de' Fiori Market",           category: "Shopping",   cost: 1000, time: "08:00 AM", openTime: "07:00 AM", closeTime: "02:00 PM", operatingHours: "07:00 AM – 02:00 PM", duration: "2.0 hrs", locationArea: "Piazza Campo de' Fiori", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
+    { name: "Appian Way Cycling",               category: "Adventure",  cost: 1200, time: "09:00 AM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "3.0 hrs", locationArea: "Parco Regionale Appia Antica", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
   ],
 };
 
@@ -57,7 +70,6 @@ const getActivitiesForCity = (city: string) => {
   if (key.includes('paris'))       return CITY_ACTIVITIES.paris;
   if (key.includes('interlaken'))  return CITY_ACTIVITIES.interlaken;
   if (key.includes('rome') || key.includes('roma')) return CITY_ACTIVITIES.rome;
-  // Fallback: return all activities
   return [
     ...CITY_ACTIVITIES.paris,
     ...CITY_ACTIVITIES.interlaken,
@@ -114,18 +126,104 @@ const ItineraryBuilder = () => {
     setStopForm({ city: '', startDate: '', endDate: '', budget: '' });
   };
 
-  const handleAddActivity = (mockAct: { name: string; category: string; cost: number; image: string; time: string }) => {
+  const getSectionDays = (startDateStr: string, endDateStr: string) => {
+    const [y1, m1, d1] = startDateStr.split('-').map(Number);
+    const [y2, m2, d2] = endDateStr.split('-').map(Number);
+    const start = new Date(y1, m1 - 1, d1);
+    const end = new Date(y2, m2 - 1, d2);
+    const daysDiff = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+    const days: string[] = [];
+    for (let i = 0; i <= daysDiff; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      days.push(`${y}-${m}-${day}`);
+    }
+    return days.length > 0 ? days : [startDateStr];
+  };
+
+  const handleAddActivity = (mockAct: ActivityTemplate) => {
     if (!activeSectionId) return;
     const section = currentTrip.sections.find(s => s.id === activeSectionId);
     if (!section) return;
+
+    const days = getSectionDays(section.startDate, section.endDate);
+
+    // Find day with least activities to evenly distribute
+    const countsByDay: Record<string, number> = {};
+    days.forEach(d => { countsByDay[d] = 0; });
+    section.activities.forEach(a => {
+      if (countsByDay[a.date] !== undefined) {
+        countsByDay[a.date]++;
+      }
+    });
+
+    // Pick day with minimum activity count
+    let targetDate = days[0];
+    let minCount = Infinity;
+    for (const d of days) {
+      if (countsByDay[d] < minCount) {
+        minCount = countsByDay[d];
+        targetDate = d;
+      }
+    }
+
+    // Determine realistic time slot based on slot count for that day
+    const TIME_SLOTS = ["09:30 AM", "01:30 PM", "05:30 PM", "08:00 PM"];
+    const slotIdx = countsByDay[targetDate] % TIME_SLOTS.length;
+    const targetTime = mockAct.time || TIME_SLOTS[slotIdx];
 
     addActivity(activeSectionId, {
       name: mockAct.name,
       category: mockAct.category,
       cost: mockAct.cost,
-      date: section.startDate,
-      time: mockAct.time,
-      image: mockAct.image
+      date: targetDate,
+      time: targetTime,
+      image: mockAct.image,
+      duration: mockAct.duration || "2.0 hrs",
+      openTime: mockAct.openTime || "09:00 AM",
+      closeTime: mockAct.closeTime || "07:00 PM",
+      operatingHours: mockAct.operatingHours || "09:00 AM – 07:00 PM",
+      locationArea: mockAct.locationArea || section.city
+    });
+  };
+
+  const handleAiAutoPlan = () => {
+    if (!currentTrip || currentTrip.sections.length === 0) return;
+
+    currentTrip.sections.forEach((section) => {
+      const cityPool = getActivitiesForCity(section.city);
+      const days = getSectionDays(section.startDate, section.endDate);
+      const existingNames = new Set(section.activities.map(a => a.name));
+      const available = cityPool.filter(a => !existingNames.has(a.name));
+
+      const TIME_SLOTS = ["09:30 AM", "02:00 PM", "06:30 PM"];
+      let actIdx = 0;
+
+      // Assign 2 to 3 activities per day across all section days
+      days.forEach((dayDate) => {
+        for (let slot = 0; slot < 2; slot++) {
+          if (actIdx < available.length) {
+            const act = available[actIdx];
+            addActivity(section.id, {
+              name: act.name,
+              category: act.category,
+              cost: act.cost,
+              date: dayDate,
+              time: TIME_SLOTS[slot] || act.time || "10:00 AM",
+              image: act.image,
+              duration: act.duration || "2.0 hrs",
+              openTime: act.openTime || "09:00 AM",
+              closeTime: act.closeTime || "07:00 PM",
+              operatingHours: act.operatingHours || "09:00 AM – 07:00 PM",
+              locationArea: act.locationArea || section.city
+            });
+            actIdx++;
+          }
+        }
+      });
     });
   };
 
@@ -156,9 +254,18 @@ const ItineraryBuilder = () => {
                 {currentTrip.startDate} — {currentTrip.endDate} • {currentTrip.destination}
               </p>
             </div>
-            <button onClick={handleSave} className="bg-roamora-green hover:bg-roamora-greenHover text-white px-6 py-3 rounded-xl font-medium shadow-sm transition-colors whitespace-nowrap">
-              Save Itinerary
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleAiAutoPlan}
+                className="bg-[#A88A4A] hover:bg-[#8F743B] text-white px-5 py-3 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 whitespace-nowrap"
+                title="Automatically schedule activities evenly across all days with balanced time slots"
+              >
+                ✨ AI Auto-Plan All Stops
+              </button>
+              <button onClick={handleSave} className="bg-roamora-green hover:bg-roamora-greenHover text-white px-6 py-3 rounded-xl font-medium shadow-sm transition-colors whitespace-nowrap">
+                Save Itinerary
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col gap-2">

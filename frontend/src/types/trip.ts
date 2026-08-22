@@ -6,6 +6,11 @@ export interface Activity {
   time: string;
   cost: number;
   image?: string;
+  duration?: string;
+  openTime?: string;
+  closeTime?: string;
+  operatingHours?: string;
+  locationArea?: string;
 }
 
 export interface Section {
