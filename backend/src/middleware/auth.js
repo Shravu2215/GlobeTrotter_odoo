@@ -8,7 +8,7 @@ function authenticate(req, res, next) {
       throw new AppError("No token provided", 401);
     }
     const token = header.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "globetrotter_secret_key_2024");
     req.user = decoded; // { id, role }
     next();
   } catch (err) {

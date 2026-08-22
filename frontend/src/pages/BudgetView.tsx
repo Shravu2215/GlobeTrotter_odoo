@@ -52,116 +52,260 @@ interface HotelOption {
 const CITY_HOTELS: Record<string, HotelOption[]> = {
   paris: [
     {
-      id: 'p-lux',
+      id: 'p-meurice',
+      name: 'Le Meurice – Dorchester Collection',
+      stars: 5,
+      tier: 'luxury',
+      pricePerNight: 48000,
+      location: 'Rue de Rivoli, 1st Arr., Paris',
+      rating: 4.9,
+      reviewsCount: 1850,
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
+      amenities: ['Tuileries Garden View', 'Valmont Spa', 'Alain Ducasse Dining', 'Butler Service']
+    },
+    {
+      id: 'p-madame',
       name: 'Hôtel Madame Rêve',
       stars: 5,
       tier: 'luxury',
-      pricePerNight: 9500,
-      location: '1st Arrondissement, Louvre Area, Paris',
+      pricePerNight: 32000,
+      location: 'Louvre & Bourse Quarter, 1st Arr., Paris',
       rating: 4.9,
       reviewsCount: 1420,
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
-      amenities: ['Eiffel & Louvre Views', 'Rooftop Lounge', 'Spa & Wellness', 'Michelin Dining']
+      image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500',
+      amenities: ['Eiffel & Louvre Views', 'Rooftop Cocktail Lounge', 'Wellness Spa', 'Fine Dining']
     },
     {
-      id: 'p-std',
+      id: 'p-pullman',
+      name: 'Pullman Paris Tour Eiffel',
+      stars: 4,
+      tier: 'standard',
+      pricePerNight: 22000,
+      location: '15th Arr., Eiffel Tower District, Paris',
+      rating: 4.8,
+      reviewsCount: 2950,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
+      amenities: ['Direct Eiffel Tower Balcony', 'FRAME Terrace', 'Fitness Club', 'Express Metro']
+    },
+    {
+      id: 'p-hoxton',
+      name: 'The Hoxton, Paris',
+      stars: 4,
+      tier: 'standard',
+      pricePerNight: 18500,
+      location: '2nd Arr., Grands Boulevards, Paris',
+      rating: 4.7,
+      reviewsCount: 2180,
+      image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
+      amenities: ['Historic 18th Century Hotel', 'Speakeasy Bar', 'Internal Courtyards', 'Complimentary Bikes']
+    },
+    {
+      id: 'p-citizenm',
       name: 'CitizenM Paris Gare de Lyon',
       stars: 4,
       tier: 'standard',
-      pricePerNight: 4200,
+      pricePerNight: 14200,
       location: '12th Arrondissement, Central Paris',
       rating: 4.7,
       reviewsCount: 2380,
-      image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-      amenities: ['King XL Bed', 'City Skyline Bar', 'Ultra-Fast Wi-Fi', 'Metro Connected']
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
+      amenities: ['King XL Bed', 'CloudM Skybar', 'Ultra-Fast Wi-Fi', 'Metro Connected']
     },
     {
-      id: 'p-bud',
+      id: 'p-people',
       name: 'The People Paris Belleville',
       stars: 3,
       tier: 'budget',
-      pricePerNight: 2300,
+      pricePerNight: 8500,
       location: 'Belleville Arts Quarter, Paris',
       rating: 4.5,
       reviewsCount: 1890,
       image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500',
-      amenities: ['Private & Pod Rooms', 'Rooftop Terrace', 'Cafe & Bar', 'Free Walking Tours']
+      amenities: ['Private Suites & Pods', 'Rooftop Terrace', 'Cafe & Bar', 'Free Walking Tours']
+    },
+    {
+      id: 'p-generator',
+      name: 'Generator Paris Boutique Hostellerie',
+      stars: 3,
+      tier: 'budget',
+      pricePerNight: 6800,
+      location: '10th Arr., Canal Saint-Martin, Paris',
+      rating: 4.4,
+      reviewsCount: 3400,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
+      amenities: ['Rooftop Sacré-Cœur Views', 'Underground Lounge', 'Private En-Suites', 'Metro 2 Min']
     }
   ],
   interlaken: [
     {
-      id: 'i-lux',
+      id: 'i-vj',
       name: 'Victoria-Jungfrau Grand Hotel & Spa',
       stars: 5,
       tier: 'luxury',
-      pricePerNight: 12000,
+      pricePerNight: 52000,
       location: 'Höheweg 41, Interlaken Centre',
       rating: 4.9,
-      reviewsCount: 950,
+      reviewsCount: 1250,
       image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500',
-      amenities: ['Alpine Mountain Views', '5500m² Nescens Spa', 'Heated Pool', 'Fine Dining']
+      amenities: ['Jungfrau Mountain Views', '5500m² Nescens Spa', 'Heated Outdoor Pool', 'Fine Dining']
     },
     {
-      id: 'i-std',
+      id: 'i-beaurivage',
+      name: 'Romantik Hotel Beau Rivage',
+      stars: 5,
+      tier: 'luxury',
+      pricePerNight: 34000,
+      location: 'Aare Riverfront, Interlaken',
+      rating: 4.8,
+      reviewsCount: 890,
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
+      amenities: ['Panoramic River Terrace', 'Indoors Spa & Pool', 'Swiss Gourmet Cuisine', 'Garden Lounge']
+    },
+    {
+      id: 'i-hotelinter',
       name: 'Hotel Interlaken',
       stars: 4,
       tier: 'standard',
-      pricePerNight: 4800,
+      pricePerNight: 21500,
       location: 'Near Interlaken Ost Train Station',
       rating: 4.6,
       reviewsCount: 1620,
       image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
-      amenities: ['Swiss Historic Hotel', 'Garden Restaurant', 'Free Transit Pass', 'Mountain Gear Storage']
+      amenities: ['Swiss Historic Hotel', 'Taferne Garden Restaurant', 'Free Regional Transit Pass', 'Ski Storage']
     },
     {
-      id: 'i-bud',
+      id: 'i-metropole',
+      name: 'Metropole Swiss Quality Hotel',
+      stars: 4,
+      tier: 'standard',
+      pricePerNight: 17800,
+      location: 'Höheweg Promenade, Interlaken',
+      rating: 4.5,
+      reviewsCount: 1410,
+      image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
+      amenities: ['Top o’Met Rooftop Restaurant', 'Sauna & Fitness', 'Central Altitude Views', 'Bus Hub']
+    },
+    {
+      id: 'i-dunord',
+      name: 'Hotel Du Nord Interlaken',
+      stars: 3,
+      tier: 'standard',
+      pricePerNight: 13500,
+      location: 'East Promenade, Interlaken',
+      rating: 4.5,
+      reviewsCount: 1100,
+      image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500',
+      amenities: ['Alpine Balcony Rooms', 'Buffet Breakfast', 'Bicycle Rental', 'Ski Shuttle']
+    },
+    {
+      id: 'i-balmers',
       name: 'Balmers Swiss Chalet Lodge',
       stars: 3,
       tier: 'budget',
-      pricePerNight: 2400,
+      pricePerNight: 8200,
       location: 'Matten bei Interlaken, Switzerland',
       rating: 4.4,
       reviewsCount: 2150,
       image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
-      amenities: ['Traditional Chalet', 'Outdoor Hot Tub', 'Alpine Lounge', 'Adventure Booking Desk']
+      amenities: ['Traditional Chalet', 'Outdoor Hot Tub', 'Alpine Lounge', 'Adventure Desk']
+    },
+    {
+      id: 'i-youth',
+      name: 'Youth Hostel Interlaken Ost',
+      stars: 3,
+      tier: 'budget',
+      pricePerNight: 6400,
+      location: 'Adjacent Interlaken Ost Station',
+      rating: 4.6,
+      reviewsCount: 1980,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
+      amenities: ['Modern Alpine Rooms', '3Gastro Restaurant', 'Free City Pass', 'Game Lounge']
     }
   ],
   rome: [
     {
-      id: 'r-lux',
-      name: 'Hotel de Russie',
+      id: 'r-derussie',
+      name: 'Hotel de Russie – Rocco Forte',
       stars: 5,
       tier: 'luxury',
-      pricePerNight: 10500,
+      pricePerNight: 46000,
       location: 'Via del Babuino, Piazza del Popolo, Rome',
       rating: 4.9,
-      reviewsCount: 1120,
+      reviewsCount: 1320,
       image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
-      amenities: ['Secret Garden Bar', 'De Russie Spa', 'Valet & Concierge', 'Historic Luxury']
+      amenities: ['Secret Terraced Garden', 'De Russie Spa', 'Stravinskij Bar', 'Concierge Service']
     },
     {
-      id: 'r-std',
+      id: 'r-naiadi',
+      name: 'Anantara Palazzo Naiadi Rome Hotel',
+      stars: 5,
+      tier: 'luxury',
+      pricePerNight: 33000,
+      location: 'Piazza della Repubblica, Rome',
+      rating: 4.8,
+      reviewsCount: 1150,
+      image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500',
+      amenities: ['Rooftop Pool & Lounge', 'Neoclassical Marble Palace', 'Anantara Spa', 'Termini Near']
+    },
+    {
+      id: 'r-fori',
+      name: 'NH Collection Roma Fori Imperiali',
+      stars: 4,
+      tier: 'standard',
+      pricePerNight: 22500,
+      location: 'Via di Trevi, Historic Center, Rome',
+      rating: 4.7,
+      reviewsCount: 1450,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
+      amenities: ['Colosseum & Forum Views', 'Secret View Rooftop Bar', 'Artisanal Italian Dining', 'Walking Distance Sights']
+    },
+    {
+      id: 'r-hoxton',
       name: 'The Hoxton Rome',
       stars: 4,
       tier: 'standard',
-      pricePerNight: 4300,
-      location: 'Salario, Near Villa Borghese, Rome',
+      pricePerNight: 16800,
+      location: 'Salario Quarter, Near Villa Borghese, Rome',
       rating: 4.7,
       reviewsCount: 1980,
       image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-      amenities: ['Mid-century Design', 'Artisanal Cafe & Bar', 'Complimentary Bikes', 'Terrace Restaurant']
+      amenities: ['Mid-Century Italian Decor', 'Caffe Crio & Terrace', 'Free City Bikes', 'Boutique Lounge']
     },
     {
-      id: 'r-bud',
+      id: 'r-mama',
+      name: 'Mama Shelter Roma',
+      stars: 4,
+      tier: 'standard',
+      pricePerNight: 13200,
+      location: 'Prati, Near Vatican Museums, Rome',
+      rating: 4.6,
+      reviewsCount: 1680,
+      image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500',
+      amenities: ['Rooftop Solarium & Pool', 'Pizzeria & Bar', 'Vatican Metro 5 Min', 'Design Suites']
+    },
+    {
+      id: 'r-yellow',
       name: 'YellowSquare Rome Boutique Social',
       stars: 3,
       tier: 'budget',
-      pricePerNight: 2100,
+      pricePerNight: 7500,
       location: 'Termini Central Hub, Rome',
       rating: 4.5,
       reviewsCount: 3100,
-      image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500',
-      amenities: ['En-suite Privates', 'Co-working & Lounge', 'Italian Cooking Classes', 'Rooftop Events']
+      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
+      amenities: ['En-suite Private Rooms', 'Co-working Space', 'Cooking Masterclasses', 'Rooftop Events']
+    },
+    {
+      id: 'r-beehive',
+      name: 'Beehive Boutique Eco Hostel & Rooms',
+      stars: 3,
+      tier: 'budget',
+      pricePerNight: 5900,
+      location: 'Via Marghera, Central Rome',
+      rating: 4.6,
+      reviewsCount: 1420,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500',
+      amenities: ['Organic Cafe & Garden', 'Eco-friendly Design', 'Quiet Courtyard', 'Central Station 3 Min']
     }
   ]
 };
@@ -173,7 +317,7 @@ const DEFAULT_HOTELS: HotelOption[] = [
     name: 'Grand Signature Luxury Resort & Spa',
     stars: 5,
     tier: 'luxury',
-    pricePerNight: 9000,
+    pricePerNight: 35000,
     location: 'Prime City Centre Waterfront',
     rating: 4.9,
     reviewsCount: 1200,
@@ -185,7 +329,7 @@ const DEFAULT_HOTELS: HotelOption[] = [
     name: 'Novotel Boutique & Suites',
     stars: 4,
     tier: 'standard',
-    pricePerNight: 3800,
+    pricePerNight: 18000,
     location: 'Central Downtown District',
     rating: 4.6,
     reviewsCount: 2200,
@@ -197,7 +341,7 @@ const DEFAULT_HOTELS: HotelOption[] = [
     name: 'The Social Hub Lifestyle Hotel',
     stars: 3,
     tier: 'budget',
-    pricePerNight: 2000,
+    pricePerNight: 8500,
     location: 'Arts & Cultural District',
     rating: 4.4,
     reviewsCount: 1750,
@@ -223,106 +367,238 @@ const CITY_TRANSPORT: Record<string, TransportOption[]> = {
   paris: [
     {
       id: 't-tgv',
-      name: 'SNCF TGV INOUI High-Speed Rail',
+      name: 'SNCF TGV INOUI High-Speed Rail Pass',
       type: 'train',
       mediumName: 'High-Speed Bullet Train',
-      cost: 3800,
+      cost: 6800,
       duration: '3 hrs 15 mins',
-      route: 'Paris Gare de Lyon ⇄ Switzerland / Regional Hub',
+      route: 'Paris Gare de Lyon ⇄ Regional Hub',
       icon: Train,
       tier: 'standard'
     },
     {
+      id: 't-eurostar',
+      name: 'Eurostar International Express Rail',
+      type: 'train',
+      mediumName: 'Cross-Border Bullet Rail',
+      cost: 8500,
+      duration: '2 hrs 20 mins',
+      route: 'Paris Gare du Nord ⇄ International Rail',
+      icon: Train,
+      tier: 'luxury'
+    },
+    {
       id: 't-metro',
-      name: 'Paris Visite Unlimited 3-Day Transit Pass',
+      name: 'Paris Visite 3-Day Unlimited Metro & RER Pass',
       type: 'metro',
       mediumName: 'Subway & RER Metro Network',
-      cost: 2100,
-      duration: '3 Full Days Unlimited',
-      route: 'All Paris Metro, RER, Trams & Bus Zones 1-3',
+      cost: 3400,
+      duration: '3 Days Unlimited',
+      route: 'All Paris Metro, RER & Bus Zones 1-3',
       icon: Bus,
       tier: 'budget'
     },
     {
       id: 't-rer',
-      name: 'RER B Express Airport Transfer + Private Shuttle',
-      type: 'cab',
-      mediumName: 'Airport Rail & Private Car',
-      cost: 4500,
+      name: 'RER B Express Airport Rail & Central Metro',
+      type: 'metro',
+      mediumName: 'Express Airport Rail',
+      cost: 2200,
       duration: '35 mins direct',
-      route: 'Charles de Gaulle (CDG) ⇄ Central Paris',
-      icon: Car,
-      tier: 'luxury'
-    }
-  ],
-  interlaken: [
-    {
-      id: 't-swiss',
-      name: 'Swiss Travel Pass 3-Day (All-Inclusive)',
-      type: 'train',
-      mediumName: 'National Rail, Boats & Alpine Buses',
-      cost: 5800,
-      duration: '3 Days Unlimited',
-      route: 'Jungfrau Region, Scenic Alpine Lakes & Rail',
-      icon: Train,
-      tier: 'standard'
-    },
-    {
-      id: 't-lake',
-      name: 'Lake Thun & Brienz Scenic Transit Ferry',
-      type: 'bus',
-      mediumName: 'Alpine Lake Passenger Boat',
-      cost: 1600,
-      duration: '2 hrs cruise',
-      route: 'Interlaken West ⇄ Thun Castle Quay',
+      route: 'CDG Airport ⇄ Châtelet Les Halles',
       icon: Bus,
       tier: 'budget'
     },
     {
-      id: 't-heli',
-      name: 'Scenic Glacier Mountain Shuttle & Taxi',
+      id: 't-cab',
+      name: 'Private Executive Mercedes Airport Transfer',
       type: 'cab',
-      mediumName: 'Private Mountain Van Transfer',
+      mediumName: 'Private Chauffeur Car',
       cost: 6500,
-      duration: '45 mins',
-      route: 'Interlaken ⇄ Grindelwald & Lauterbrunnen',
+      duration: 'Door-to-door 40 mins',
+      route: 'Airport ⇄ Paris Hotel Direct',
       icon: Car,
       tier: 'luxury'
+    },
+    {
+      id: 't-bigbus',
+      name: 'Big Bus Paris Hop-On Hop-Off Sightseeing Shuttle',
+      type: 'bus',
+      mediumName: 'Open-top Tourist Bus Pass',
+      cost: 3800,
+      duration: '48 Hours Unlimited',
+      route: 'Eiffel, Louvre, Notre-Dame & Montmartre',
+      icon: Bus,
+      tier: 'standard'
+    },
+    {
+      id: 't-batobus',
+      name: 'Seine River Batobus Passenger Shuttle',
+      type: 'bus',
+      mediumName: 'River Seine Ferry Boat',
+      cost: 1800,
+      duration: '1 Day Unlimited',
+      route: '9 Key River Stops along Seine Sights',
+      icon: Bus,
+      tier: 'budget'
+    }
+  ],
+  interlaken: [
+    {
+      id: 't-swisspass',
+      name: 'Swiss Travel Pass 3-Day All-Inclusive',
+      type: 'train',
+      mediumName: 'Swiss National Rail, Boats & Buses',
+      cost: 24500,
+      duration: '3 Days Unlimited',
+      route: 'All Swiss Trains, Alpine Lakes & Public Transit',
+      icon: Train,
+      tier: 'luxury'
+    },
+    {
+      id: 't-jungfraupass',
+      name: 'Jungfrau Regional Rail & Mountain Cableways',
+      type: 'train',
+      mediumName: 'Mountain Railway & Gondola Pass',
+      cost: 18200,
+      duration: '3 Days Unlimited',
+      route: 'Interlaken ⇄ Grindelwald ⇄ Eiger Express',
+      icon: Train,
+      tier: 'standard'
+    },
+    {
+      id: 't-goldenpass',
+      name: 'GoldenPass Panoramic Express Scenic Rail',
+      type: 'train',
+      mediumName: 'Panoramic Alpine Railway',
+      cost: 8400,
+      duration: '3 hrs scenic',
+      route: 'Interlaken ⇄ Montreux / Lucerne',
+      icon: Train,
+      tier: 'standard'
+    },
+    {
+      id: 't-ferry',
+      name: 'Lake Thun & Lake Brienz Scenic Ferry Pass',
+      type: 'bus',
+      mediumName: 'Passenger Steamboat Pass',
+      cost: 3600,
+      duration: '1 Day Unlimited',
+      route: 'Interlaken West & East Quays ⇄ Spiez / Brienz',
+      icon: Bus,
+      tier: 'budget'
+    },
+    {
+      id: 't-postbus',
+      name: 'PostBus Alpine Valley Transit Pass',
+      type: 'bus',
+      mediumName: 'Regional Alpine Yellow Bus Pass',
+      cost: 2800,
+      duration: 'Multi-Day Unlimited',
+      route: 'Lauterbrunnen, Isenfluh & Valley Villages',
+      icon: Bus,
+      tier: 'budget'
+    },
+    {
+      id: 't-alpinevan',
+      name: 'Private Alpine Van Taxi & Luggage Transfer',
+      type: 'cab',
+      mediumName: 'Private Mountain Chauffeur',
+      cost: 9500,
+      duration: 'Door-to-door mountain van',
+      route: 'Interlaken Hotel ⇄ Mountain Trails & Resort',
+      icon: Car,
+      tier: 'luxury'
+    },
+    {
+      id: 't-firstgondola',
+      name: 'Grindelwald First Gondola & Cliff Walk Pass',
+      type: 'bus',
+      mediumName: 'Aerial Cable Car Shuttle',
+      cost: 5200,
+      duration: 'Return Pass',
+      route: 'Grindelwald Station ⇄ First Top Station',
+      icon: Bus,
+      tier: 'standard'
     }
   ],
   rome: [
     {
       id: 't-freccia',
-      name: 'Frecciarossa 1000 High-Speed Express',
+      name: 'Frecciarossa 1000 High-Speed Express Rail',
       type: 'train',
       mediumName: 'Italian High-Speed Rail',
-      cost: 3200,
+      cost: 5600,
       duration: '1 hr 35 mins',
-      route: 'Roma Termini ⇄ Florence / Venice',
+      route: 'Roma Termini ⇄ Florence / Venice Express',
       icon: Train,
       tier: 'standard'
     },
     {
-      id: 't-roma',
+      id: 't-italo',
+      name: 'Italo Treno High-Speed Express',
+      type: 'train',
+      mediumName: 'Private High-Speed Bullet Rail',
+      cost: 4800,
+      duration: '1 hr 40 mins',
+      route: 'Roma Tiburtina ⇄ Naples / Florence',
+      icon: Train,
+      tier: 'standard'
+    },
+    {
+      id: 't-romapass',
       name: 'Roma Pass 72-Hour Transit & Museum Pass',
       type: 'metro',
       mediumName: 'ATAC Metro, Tram & Bus Network',
-      cost: 1900,
+      cost: 3200,
       duration: '72 Hours Unlimited',
-      route: 'All Rome Metro Lines A & B + Urban Buses',
+      route: 'All Rome Metro Lines A & B + City Buses',
       icon: Bus,
       tier: 'budget'
     },
     {
       id: 't-leonardo',
-      name: 'Leonardo Express Airport Direct + NCC Chauffeur',
-      type: 'cab',
-      mediumName: 'Airport Train + Chauffeur Car',
-      cost: 4200,
+      name: 'Leonardo Express Airport Direct Rail',
+      type: 'train',
+      mediumName: 'Airport Non-stop Express',
+      cost: 1900,
       duration: '32 mins direct',
-      route: 'Fiumicino (FCO) ⇄ Historic Center',
+      route: 'Fiumicino (FCO) ⇄ Roma Termini',
+      icon: Train,
+      tier: 'budget'
+    },
+    {
+      id: 't-ncc',
+      name: 'Private NCC Chauffeur Airport & City Car',
+      type: 'cab',
+      mediumName: 'Private Luxury Chauffeur',
+      cost: 5800,
+      duration: 'Door-to-door direct',
+      route: 'FCO Airport ⇄ Rome Historic Hotel',
       icon: Car,
       tier: 'luxury'
+    },
+    {
+      id: 't-romeopen',
+      name: 'Rome Open Sightseeing Hop-On Hop-Off Bus',
+      type: 'bus',
+      mediumName: 'Double-Decker Panoramic Bus',
+      cost: 2900,
+      duration: '48 Hours Unlimited',
+      route: 'Colosseum, Vatican, Trevi Fountain & Pantheon',
+      icon: Bus,
+      tier: 'standard'
+    },
+    {
+      id: 't-atac3day',
+      name: 'ATAC 72-Hour City Wide Transit Pass',
+      type: 'metro',
+      mediumName: 'Urban Transit Network',
+      cost: 1600,
+      duration: '72 Hours Unlimited',
+      route: 'All Bus, Tram & Metro Routes inside Rome',
+      icon: Bus,
+      tier: 'budget'
     }
   ]
 };
@@ -554,37 +830,55 @@ export default function BudgetView() {
   const avgCostPerDay = Math.round(grandTotalCost / totalDays);
   const targetDailyBudget = Math.round(totalBudget / totalDays);
 
-  // Four Pillar Breakdown
+  // Active Filtered City Sections for Pie Chart & Metric Cards
+  const activeCityName = useMemo(() => {
+    if (activeSectionTab === 'all') return 'All Cities Combined';
+    const sec = sectionsData.find((s) => s.id === activeSectionTab);
+    return sec ? `${sec.city} Stop` : 'Selected City';
+  }, [activeSectionTab, sectionsData]);
+
+  const displaySections = useMemo(() => {
+    if (activeSectionTab === 'all') return sectionsData;
+    return sectionsData.filter((s) => s.id === activeSectionTab);
+  }, [activeSectionTab, sectionsData]);
+
+  const displayStay = useMemo(() => displaySections.reduce((sum, s) => sum + s.stayCost, 0), [displaySections]);
+  const displayTransport = useMemo(() => displaySections.reduce((sum, s) => sum + s.transportCost, 0), [displaySections]);
+  const displayActivities = useMemo(() => displaySections.reduce((sum, s) => sum + s.activitiesCost, 0), [displaySections]);
+  const displayMeals = useMemo(() => displaySections.reduce((sum, s) => sum + s.mealsCost, 0), [displaySections]);
+  const displayTotalCost = displayStay + displayTransport + displayActivities + displayMeals;
+
+  // Four Pillar Category Breakdown (Filtered by selected city tab)
   const pillars = useMemo(() => [
     {
       name: 'Stay',
-      cost: grandTotalStay,
+      cost: displayStay,
       color: PIE_COLORS.Stay,
-      description: `${sectionsData.map((s) => `${s.city}: ${s.selectedHotel.name}`).join(' · ')}`,
+      description: displaySections.map((s) => `${s.city}: ${s.selectedHotel.name}`).join(' · '),
       tip: 'Verified accommodations tailored to each destination',
     },
     {
       name: 'Transport',
-      cost: grandTotalTransport,
+      cost: displayTransport,
       color: PIE_COLORS.Transport,
-      description: `${sectionsData.map((s) => `${s.city}: ${s.selectedTransport.mediumName}`).join(' · ')}`,
+      description: displaySections.map((s) => `${s.city}: ${s.selectedTransport.mediumName}`).join(' · '),
       tip: 'High-speed trains, regional passes & airport connections',
     },
     {
       name: 'Activities',
-      cost: grandTotalActivities,
+      cost: displayActivities,
       color: PIE_COLORS.Activities,
-      description: `${sectionsData.reduce((sum, s) => sum + s.activitiesList.length, 0)} planned attractions`,
+      description: `${displaySections.reduce((sum, s) => sum + s.activitiesList.length, 0)} planned attractions`,
       tip: 'Sightseeing, museums, tours & tickets',
     },
     {
       name: 'Meals',
-      cost: grandTotalMeals,
+      cost: displayMeals,
       color: PIE_COLORS.Meals,
-      description: `₹${Math.round(grandTotalMeals / totalDays).toLocaleString()}/day across all sections`,
+      description: `Estimated food allowance for ${activeCityName}`,
       tip: 'Daily local cuisine, bakeries & dining allowance',
     },
-  ], [grandTotalStay, grandTotalTransport, grandTotalActivities, grandTotalMeals, sectionsData, totalDays]);
+  ], [displayStay, displayTransport, displayActivities, displayMeals, displaySections, activeCityName]);
 
   // --- AI Smart Auto-Rebalance Solver ---
   const handleApplyAiRebalance = () => {
@@ -640,9 +934,16 @@ export default function BudgetView() {
 
   const overbudgetDays = dailyBreakdown.filter((d) => d.isDayOver);
 
+  // --- Share Itinerary to Community Handler ---
+  const handleShareToCommunity = () => {
+    if (!activeTrip) return;
+    const entry = shareTrip(activeTrip);
+    navigate(`/community/view?id=${entry.id}`);
+  };
+
   // --- SVG Pie / Donut Chart Geometry ---
   const pieData = useMemo(() => {
-    const total = grandTotalCost || 1;
+    const total = displayTotalCost || 1;
     let accumulatedAngle = 0;
 
     return pillars.map((pillar) => {
@@ -658,7 +959,7 @@ export default function BudgetView() {
         endAngle: accumulatedAngle,
       };
     });
-  }, [pillars, grandTotalCost]);
+  }, [pillars, displayTotalCost]);
 
   const getCoordinatesForPercent = (percent: number) => {
     const x = Math.cos(2 * Math.PI * percent);
@@ -670,7 +971,7 @@ export default function BudgetView() {
     let cumulativePercent = 0;
 
     return pieData.map((slice) => {
-      const slicePercent = slice.cost / (grandTotalCost || 1);
+      const slicePercent = slice.cost / (displayTotalCost || 1);
       const [startX, startY] = getCoordinatesForPercent(cumulativePercent);
       cumulativePercent += slicePercent;
       const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
@@ -704,12 +1005,6 @@ export default function BudgetView() {
     });
   };
 
-  const handleShareToCommunity = () => {
-    if (!activeTrip) return;
-    const entry = shareTrip(activeTrip);
-    navigate(`/community?highlight=${entry.id}`);
-  };
-
   return (
     <div className="min-h-screen bg-[#F4F0E8] text-[#17251D] font-body pb-24">
       <Header />
@@ -740,27 +1035,37 @@ export default function BudgetView() {
             </div>
           </div>
 
-          {/* Quick AI Presets */}
-          <div className="bg-white/80 border border-[#D8D1C3] p-1.5 rounded-2xl flex items-center gap-1 shadow-sm self-start md:self-auto">
-            <span className="text-[11px] font-semibold text-gray-500 px-2.5 uppercase tracking-wider">AI Tier:</span>
-            {(['budget', 'balanced', 'luxury'] as const).map((tier) => (
-              <button
-                key={tier}
-                onClick={() => {
-                  setAiTier(tier);
-                  setSectionHotelOverrides({});
-                  setSectionTransportOverrides({});
-                  setAiOptimizedNotice(null);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition ${
-                  aiTier === tier && Object.keys(sectionHotelOverrides).length === 0
-                    ? 'bg-[#173B2B] text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {tier}
-              </button>
-            ))}
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+            <button
+              onClick={handleShareToCommunity}
+              className="bg-[#173B2B] hover:bg-[#102E21] text-white px-4 py-2.5 rounded-2xl text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition"
+            >
+              <Share2 size={14} /> {alreadyShared ? 'View in Community' : 'Share to Community'}
+            </button>
+
+            {/* Quick AI Presets */}
+            <div className="bg-white/80 border border-[#D8D1C3] p-1.5 rounded-2xl flex items-center gap-1 shadow-sm">
+              <span className="text-[11px] font-semibold text-gray-500 px-2.5 uppercase tracking-wider">AI Tier:</span>
+              {(['budget', 'balanced', 'luxury'] as const).map((tier) => (
+                <button
+                  key={tier}
+                  onClick={() => {
+                    setAiTier(tier);
+                    setSectionHotelOverrides({});
+                    setSectionTransportOverrides({});
+                    setAiOptimizedNotice(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition ${
+                    aiTier === tier && Object.keys(sectionHotelOverrides).length === 0
+                      ? 'bg-[#173B2B] text-white shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -868,12 +1173,12 @@ export default function BudgetView() {
             <div className="w-full flex items-center justify-between mb-2 border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-xl font-semibold text-[#173B2B]" style={{ fontFamily: 'Georgia, serif' }}>
-                  Budget Distribution
+                  Budget Distribution ({activeCityName})
                 </h2>
-                <p className="text-xs text-gray-400">Hover slices to inspect pillars</p>
+                <p className="text-xs text-gray-400">Hover slices to inspect categories · Filter via city tabs</p>
               </div>
               <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">
-                4 Core Pillars
+                4 Categories
               </span>
             </div>
 
@@ -886,15 +1191,15 @@ export default function BudgetView() {
               {/* Center Donut Label */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
-                  {hoveredSlice ? hoveredSlice : 'Est. Total'}
+                  {hoveredSlice ? hoveredSlice : activeCityName}
                 </span>
                 <span className="text-xl font-bold text-[#173B2B]" style={{ fontFamily: 'Georgia, serif' }}>
-                  ₹{(hoveredSlice ? pillars.find((p) => p.name === hoveredSlice)?.cost : grandTotalCost)?.toLocaleString()}
+                  ₹{(hoveredSlice ? pillars.find((p) => p.name === hoveredSlice)?.cost : displayTotalCost)?.toLocaleString()}
                 </span>
                 <span className="text-[10px] text-[#A88A4A] font-semibold">
                   {hoveredSlice
-                    ? `${Math.round(((pillars.find((p) => p.name === hoveredSlice)?.cost || 0) / (grandTotalCost || 1)) * 100)}% of total`
-                    : `${totalDays} Days Journey`}
+                    ? `${Math.round(((pillars.find((p) => p.name === hoveredSlice)?.cost || 0) / (displayTotalCost || 1)) * 100)}% of ${activeCityName}`
+                    : `${activeCityName}`}
                 </span>
               </div>
             </div>
@@ -903,7 +1208,7 @@ export default function BudgetView() {
             <div className="w-full grid grid-cols-2 gap-2 mt-2 pt-4 border-t border-gray-100">
               {pillars.map((pillar) => {
                 const isHovered = hoveredSlice === pillar.name;
-                const pct = Math.round((pillar.cost / (grandTotalCost || 1)) * 100);
+                const pct = Math.round((pillar.cost / (displayTotalCost || 1)) * 100);
 
                 return (
                   <div
@@ -1106,6 +1411,39 @@ export default function BudgetView() {
                       <span className="text-[10px] text-gray-400 block">{sec.selectedTransport.mediumName}</span>
                     </div>
                   </div>
+
+                  {/* AI Exceeded Budget Suggestion Box per City */}
+                  {isSecOver && (
+                    <div className="bg-[#FFFBEB] border border-[#FCD34D] rounded-2xl p-4 text-xs space-y-3 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-amber-950 font-bold">
+                          <Sparkles size={16} className="text-[#A88A4A]" />
+                          <span>AI Budget Adjustment Suggestion for {sec.city}</span>
+                        </div>
+                        <span className="bg-amber-200 text-amber-900 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                          Exceeds by ₹{Math.abs(sec.netSectionRemaining).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-amber-900 font-medium leading-relaxed">
+                        Your planned expenses for <strong>{sec.city}</strong> (₹{(sec.stayCost + sec.transportCost + sec.activitiesCost + sec.mealsCost).toLocaleString()}) exceed your allocated city budget of <strong>₹{sec.sectionBudget.toLocaleString()}</strong>.
+                        <br />
+                        <strong>AI Recommendation:</strong> Switch stay to <em>{sec.availableHotels.find(h => h.tier === 'budget')?.name || 'Budget Stay'}</em> (save ₹{((sec.selectedHotel.pricePerNight - (sec.availableHotels.find(h => h.tier === 'budget')?.pricePerNight || 0)) * sec.nightsCount).toLocaleString()})
+                        or select <em>{sec.availableTransport.find(t => t.tier === 'budget')?.mediumName || 'Budget Transit Pass'}</em> to bring {sec.city} comfortably back within budget.
+                      </p>
+                      <button
+                        onClick={() => {
+                          const budH = sec.availableHotels.find((h) => h.tier === 'budget');
+                          const budT = sec.availableTransport.find((t) => t.tier === 'budget');
+                          if (budH) setSectionHotelOverrides((prev) => ({ ...prev, [sec.id]: budH.id }));
+                          if (budT) setSectionTransportOverrides((prev) => ({ ...prev, [sec.id]: budT.id }));
+                          setAiOptimizedNotice(`AI rebalanced stay & transit for ${sec.city}! Destination is now within budget.`);
+                        }}
+                        className="bg-[#173B2B] text-white px-4 py-2.5 rounded-xl font-semibold uppercase text-[11px] tracking-wider hover:bg-[#102E21] transition shadow-sm flex items-center gap-1.5"
+                      >
+                        <Wand2 size={14} /> ✨ Apply AI Adjustments for {sec.city}
+                      </button>
+                    </div>
+                  )}
 
                   {/* ── Stays Recommended Specifically for THIS City ── */}
                   <div>

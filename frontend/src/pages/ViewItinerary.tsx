@@ -50,6 +50,23 @@ const DEFAULT_HOURS: Record<string, { open: string; close: string; duration: str
   shopping: { open: '10:00 AM', close: '08:00 PM', duration: '2.0 hrs', area: 'Shopping Promenade' },
 };
 
+// Helper to parse time strings like "09:30 AM", "01:30 PM", "05:00 PM" into total minutes from midnight for AM/PM chronological sorting
+const parseTimeToMinutes = (timeStr?: string): number => {
+  if (!timeStr) return 0;
+  const str = timeStr.trim().toUpperCase();
+  const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (match) {
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const ampm = match[3];
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+  return 0;
+};
+
+// --- Helpers ---
 const ViewItinerary = () => {
   const { currentTrip, addActivity, saveItinerary } = useTrip();
   const navigate = useNavigate();
@@ -115,7 +132,9 @@ const ViewItinerary = () => {
 
   const getActivitiesForDate = (date: Date) => {
     const key = formatYMD(date);
-    return allActivities.filter((a) => a.date === key);
+    return allActivities
+      .filter((a) => a.date === key)
+      .sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
   };
 
   const matchesFilter = (act: (typeof allActivities)[0]) => {
