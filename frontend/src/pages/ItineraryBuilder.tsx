@@ -45,7 +45,8 @@ const ItineraryBuilder = () => {
     }
     const timer = setTimeout(() => {
       setIsSearchingDest(true);
-      fetch(`/api/cities?search=${encodeURIComponent(stopForm.city)}`)
+      const baseUrl = (import.meta as any).env.VITE_API_URL || '';
+      fetch(`${baseUrl}/cities?search=${encodeURIComponent(stopForm.city)}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.data && data.data.cities) {
@@ -68,7 +69,8 @@ const ItineraryBuilder = () => {
     const section = currentTrip.sections.find(s => s.id === activeSectionId);
     if (!section) return;
 
-    fetch(`/api/cities?search=${encodeURIComponent(section.city)}`)
+    const baseUrl = (import.meta as any).env.VITE_API_URL || '';
+    fetch(`${baseUrl}/cities?search=${encodeURIComponent(section.city)}`)
       .then(res => res.json())
       .then(data => {
         const city = data.data?.cities?.[0];
@@ -76,7 +78,8 @@ const ItineraryBuilder = () => {
           setAvailableActivities([]);
           return null;
         }
-        return fetch(`/api/cities/${city.id}/activities`);
+        const baseUrl = (import.meta as any).env.VITE_API_URL || '';
+        return fetch(`${baseUrl}/cities/${city.id}/activities`);
       })
       .then(res => (res ? res.json() : null))
       .then(data => {
@@ -215,11 +218,13 @@ const ItineraryBuilder = () => {
       for (const section of currentTrip.sections) {
         let cityPool: ActivityTemplate[] = [];
         try {
-          const cRes = await fetch(`/api/cities?search=${encodeURIComponent(section.city)}`);
+          const baseUrl = (import.meta as any).env.VITE_API_URL || '';
+          const cRes = await fetch(`${baseUrl}/cities?search=${encodeURIComponent(section.city)}`);
           const cData = await cRes.json();
           const city = cData.data?.cities?.[0];
           if (city) {
-            const aRes = await fetch(`/api/cities/${city.id}/activities`);
+            const baseUrl = (import.meta as any).env.VITE_API_URL || '';
+            const aRes = await fetch(`${baseUrl}/cities/${city.id}/activities`);
             const aData = await aRes.json();
             if (aData && aData.data && aData.data.activities) {
               cityPool = aData.data.activities.map((a: any) => ({
