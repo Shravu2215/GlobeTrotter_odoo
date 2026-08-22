@@ -16,7 +16,20 @@ export default function Signup() {
     setError("");
     setLoading(true);
     try {
+<<<<<<< Updated upstream
       await signup(name, email, password);
+=======
+      await signup({
+        firstName,
+        lastName,
+        email,
+        phone,
+        city,
+        country,
+        password,
+      });
+
+>>>>>>> Stashed changes
       navigate("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");

@@ -1,39 +1,61 @@
 const { z } = require("zod");
 
-const signupSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be at most 50 characters"),
+const signupSchema = z
+  .object({
+    firstName: z.string().trim().optional(),
+    lastName: z.string().trim().optional(),
+    name: z.string().trim().optional(),
+    username: z.string().trim().optional(),
+    email: z
+      .string({ required_error: "Email is required" })
+      .trim()
+      .email("Invalid email address")
+      .transform((val) => val.toLowerCase()),
+    phone: z.string().trim().optional().nullable(),
+    city: z.string().trim().optional().nullable(),
+    country: z.string().trim().optional().nullable(),
+    photo: z.string().trim().optional().nullable(),
+    password: z
+      .string({ required_error: "Password is required" })
+      .min(1, "Password is required"),
+    language: z.string().trim().default("en").optional(),
+  })
+  .transform((data) => {
+    let firstName = data.firstName || "";
+    let lastName = data.lastName || "";
 
-  email: z
-    .string()
-    .trim()
-    .email("Invalid email address")
-    .max(255, "Email too long")
-    .transform((email) => email.toLowerCase()),
+    if (!firstName && data.name) {
+      const parts = data.name.trim().split(" ");
+      firstName = parts[0] || "User";
+      lastName = parts.slice(1).join(" ") || "Traveler";
+    }
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password too long")
-    .regex(/[A-Z]/, "Password must contain an uppercase letter")
-    .regex(/[a-z]/, "Password must contain a lowercase letter")
-    .regex(/[0-9]/, "Password must contain a number")
-    .regex(/[^A-Za-z0-9]/, "Password must contain a special character"),
-});
+    if (!firstName) firstName = "Traveler";
+    if (!lastName) lastName = "Explorer";
+
+    let username = data.username;
+    if (!username) {
+      const emailBase = data.email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+      username = `${emailBase || firstName.toLowerCase()}_${Math.floor(100 + Math.random() * 900)}`;
+    }
+
+    return {
+      ...data,
+      firstName,
+      lastName,
+      username,
+    };
+  });
 
 const loginSchema = z.object({
   email: z
-    .string()
+    .string({ required_error: "Email is required" })
     .trim()
     .email("Invalid email address")
-    .transform((email) => email.toLowerCase()),
-
+    .transform((val) => val.toLowerCase()),
   password: z
-    .string()
-    .min(1, "Password required"),
+    .string({ required_error: "Password is required" })
+    .min(1, "Password is required"),
 });
 
-module.exports = { signupSchema, loginSchema };
+module.exports = { signupSchema, loginSchema, registerSchema: signupSchema };

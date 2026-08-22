@@ -1,10 +1,18 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { authApi } from "@/api/auth";
+import { authApi, RegisterPayload } from "@/api/auth";
 
-interface User {
+export interface User {
   id: string;
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  username?: string;
   email: string;
+  phone?: string | null;
+  city?: string | null;
+  country?: string | null;
+  photo?: string | null;
+  language?: string;
   role: string;
 }
 
@@ -12,7 +20,11 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (
+    payloadOrName: RegisterPayload | string,
+    email?: string,
+    password?: string
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,22 +40,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    authApi.me()
-      .then((res) => setUser(res.data.user))
+    authApi
+      .me()
+      .then((res) => {
+        const userData = res.data.data?.user || res.data.user;
+        setUser(userData);
+      })
       .catch(() => localStorage.removeItem("token"))
       .finally(() => setLoading(false));
   }, []);
 
   async function login(email: string, password: string) {
     const res = await authApi.login(email, password);
-    localStorage.setItem("token", res.data.token);
-    setUser(res.data.user);
+    const token = res.data.data?.token || res.data.token;
+    const userData = res.data.data?.user || res.data.user;
+    localStorage.setItem("token", token);
+    setUser(userData);
   }
 
-  async function signup(name: string, email: string, password: string) {
-    const res = await authApi.signup(name, email, password);
-    localStorage.setItem("token", res.data.token);
-    setUser(res.data.user);
+  async function signup(
+    payloadOrName: RegisterPayload | string,
+    email?: string,
+    password?: string
+  ) {
+    const res = await authApi.signup(payloadOrName, email, password);
+    const token = res.data.data?.token || res.data.token;
+    const userData = res.data.data?.user || res.data.user;
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+    if (userData) {
+      setUser(userData);
+    }
   }
 
   function logout() {
