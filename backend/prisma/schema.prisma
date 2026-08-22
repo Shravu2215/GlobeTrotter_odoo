@@ -1,9 +1,3 @@
-// ============================================
-// BASE SCHEMA — extend this once the domain (problem statement) is known.
-// User model is battle-tested: role assignment locked down server-side
-// (see auth.controller.js — never trust role from client body).
-// ============================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,32 +12,200 @@ enum Role {
   USER
 }
 
+enum TripVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum TransportType {
+  TRAIN
+  FLIGHT
+  BUS
+}
+
+enum AccommodationTier {
+  BUDGET
+  MID_RANGE
+  LUXURY
+}
+
+enum IndoorOutdoor {
+  INDOOR
+  OUTDOOR
+  BOTH
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(USER) // never set from client input directly
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  trips Trip[]
 
   @@index([email])
 }
 
-// ============================================
-// EXAMPLE PATTERN — compound unique constraint done right
-// (last time a naive @@unique crashed on a legit second insert
-// because it didn't scope to the right combination of fields).
-// Delete this model once you add real domain models; keep the
-// pattern in mind: @@unique([fieldA, fieldB]) only on the fields
-// that TRULY must be unique together, not entity-wide.
-// ============================================
-// model Example {
-//   id        String   @id @default(uuid())
-//   userId    String
-//   itemId    String
-//   status    String
-//   createdAt DateTime @default(now())
-//
-//   @@unique([userId, itemId])
-// }
+model Trip {
+  id                String         @id @default(uuid())
+  userId            String
+  name              String
+  description       String?
+  startDate         DateTime
+  endDate           DateTime
+  numberOfTravelers Int            @default(1)
+  totalBudget       Float
+  currency          String         @default("INR")
+  coverImage        String?
+  visibility        TripVisibility @default(PRIVATE)
+  shareSlug         String?        @unique
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinations TripDestination[]
+
+  @@index([userId])
+  @@index([startDate])
+}
+
+model Destination {
+  id                String   @id @default(uuid())
+  cityName          String
+  country           String
+  region            String?
+  latitude          Float?
+  longitude         Float?
+  description       String?
+  averageDailyCost  Float?
+  budgetDailyCost   Float?
+  midRangeDailyCost Float?
+  luxuryDailyCost   Float?
+  recommendedDays   Int?
+  currency          String   @default("EUR")
+  imageUrl          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tripDestinations  TripDestination[]
+  attractions       Attraction[]
+  accommodation     AccommodationCost?
+  foodCost          FoodCost?
+  outgoingTransport TransportationOption[] @relation("OriginDestination")
+  incomingTransport TransportationOption[] @relation("DestinationDestination")
+  seasonalInfo      SeasonalInfo?
+
+  @@unique([cityName, country])
+  @@index([cityName])
+  @@index([country])
+  @@index([region])
+}
+
+model TripDestination {
+  id               String    @id @default(uuid())
+  tripId           String
+  destinationId    String
+  visitOrder       Int
+  plannedStartDate DateTime?
+  plannedEndDate   DateTime?
+  isRequired       Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  destination Destination @relation(fields: [destinationId], references: [id])
+
+  @@unique([tripId, destinationId])
+  @@unique([tripId, visitOrder])
+  @@index([tripId])
+  @@index([destinationId])
+}
+
+model Attraction {
+  id                  String        @id @default(uuid())
+  destinationId       String
+  name                String
+  category            String
+  description         String?
+  latitude            Float?
+  longitude           Float?
+  estimatedVisitHours Float?
+  entranceFee         Float?
+  currency            String        @default("EUR")
+  averageRating       Float?
+  popularityScore     Int?
+  indoorOutdoor       IndoorOutdoor @default(BOTH)
+  recommended         Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@index([category])
+  @@index([popularityScore])
+  @@index([averageRating])
+}
+
+model AccommodationCost {
+  id               String   @id @default(uuid())
+  destinationId    String   @unique
+  budgetPerNight   Float
+  midRangePerNight Float
+  luxuryPerNight   Float
+  currency         String   @default("EUR")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
+model FoodCost {
+  id             String   @id @default(uuid())
+  destinationId  String   @unique
+  budgetPerDay   Float
+  midRangePerDay Float
+  luxuryPerDay   Float
+  currency       String   @default("EUR")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
+model TransportationOption {
+  id                     String        @id @default(uuid())
+  originDestinationId    String
+  destinationId          String
+  transportType          TransportType
+  estimatedCost          Float
+  currency               String        @default("EUR")
+  estimatedDurationHours Float
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  originDestination Destination @relation("OriginDestination", fields: [originDestinationId], references: [id], onDelete: Cascade)
+  destination       Destination @relation("DestinationDestination", fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([originDestinationId, destinationId, transportType])
+  @@index([originDestinationId])
+  @@index([destinationId])
+  @@index([transportType])
+}
+
+model SeasonalInfo {
+  id                 String   @id @default(uuid())
+  destinationId      String   @unique
+  bestTravelMonths   String?
+  peakSeason         String?
+  offSeason          String?
+  weatherCategory    String?
+  seasonalMultiplier Float    @default(1.0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}

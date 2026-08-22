@@ -1,39 +1,49 @@
 import { z } from "zod";
 
-export const registerSchema = z.object({
-  firstName: z
-    .string({ required_error: "First name is required" })
-    .trim()
-    .min(1, "First name cannot be empty")
-    .max(50, "First name too long"),
-  lastName: z
-    .string({ required_error: "Last name is required" })
-    .trim()
-    .min(1, "Last name cannot be empty")
-    .max(50, "Last name too long"),
-  username: z
-    .string({ required_error: "Username is required" })
-    .trim()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username too long")
-    .regex(/^[a-zA-Z0-9_.-]+$/, "Username can only contain alphanumeric characters, underscores, and dashes")
-    .transform((val) => val.toLowerCase()),
-  email: z
-    .string({ required_error: "Email is required" })
-    .trim()
-    .email("Invalid email address")
-    .max(255, "Email too long")
-    .transform((val) => val.toLowerCase()),
-  phone: z.string().trim().optional().nullable(),
-  city: z.string().trim().optional().nullable(),
-  country: z.string().trim().optional().nullable(),
-  photo: z.string().trim().optional().nullable(),
-  password: z
-    .string({ required_error: "Password is required" })
-    .min(6, "Password must be at least 6 characters")
-    .max(128, "Password too long"),
-  language: z.string().trim().default("en").optional(),
-});
+export const registerSchema = z
+  .object({
+    firstName: z.string().trim().optional(),
+    lastName:  z.string().trim().optional(),
+    name:      z.string().trim().optional(),
+    username:  z.string().trim().optional(),
+    email: z
+      .string({ required_error: "Email is required" })
+      .trim()
+      .email("Invalid email address")
+      .transform((val) => val.toLowerCase()),
+    phone:    z.string().trim().optional().nullable(),
+    city:     z.string().trim().optional().nullable(),
+    country:  z.string().trim().optional().nullable(),
+    photo:    z.string().trim().optional().nullable(),
+    password: z
+      .string({ required_error: "Password is required" })
+      .min(1, "Password is required"),
+    language: z.string().trim().optional().default("en"),
+  })
+  .transform((data) => {
+    let firstName = (data.firstName || "").trim();
+    let lastName  = (data.lastName  || "").trim();
+
+    // Handle legacy `name` field (frontend sends full name as `name`)
+    if (!firstName && data.name) {
+      const parts = data.name.trim().split(/\s+/);
+      firstName = parts[0] ?? "Traveler";
+      lastName  = parts.slice(1).join(" ") || "Explorer";
+    }
+
+    if (!firstName) firstName = "Traveler";
+    if (!lastName)  lastName  = "Explorer";
+
+    // Auto-generate username if not provided
+    let username = (data.username || "").trim();
+    if (!username) {
+      const emailBase = data.email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+      const rand      = Math.floor(100 + Math.random() * 900);
+      username = `${emailBase || firstName.toLowerCase()}_${rand}`;
+    }
+
+    return { ...data, firstName, lastName, username };
+  });
 
 export const loginSchema = z.object({
   email: z
@@ -47,4 +57,4 @@ export const loginSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
+export type LoginInput    = z.infer<typeof loginSchema>;

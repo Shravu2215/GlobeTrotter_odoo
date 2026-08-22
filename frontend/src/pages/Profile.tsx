@@ -1,226 +1,635 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import { useAuth } from '@/hooks/useAuth';
-import { useTrip } from '@/hooks/useTrip';
-import {
-  User, Mail, Shield, Briefcase, MapPin, Calendar, LogOut,
-  CheckCircle, Globe, Award, Sparkles, Heart
-} from 'lucide-react';
+import { useState, useEffect, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useTrip } from "@/hooks/useTrip";
+import Header from "@/components/Header";
+import { Trip } from "@/types/trip";
+import { MapPin, Calendar, Edit2, Check, X, Shield, Trash2, Heart } from "lucide-react";
+
+interface City {
+  id: string;
+  name: string;
+  country: string;
+  imageUrl?: string;
+  popularity?: number;
+}
+
+const DEFAULT_CITIES: City[] = [
+  {
+    id: "city-1",
+    name: "Paris",
+    country: "France",
+    imageUrl: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80",
+    popularity: 98,
+  },
+  {
+    id: "city-2",
+    name: "Kyoto",
+    country: "Japan",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    popularity: 95,
+  },
+  {
+    id: "city-3",
+    name: "Rome",
+    country: "Italy",
+    imageUrl: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
+    popularity: 96,
+  },
+  {
+    id: "city-4",
+    name: "Santorini",
+    country: "Greece",
+    imageUrl: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=800&q=80",
+    popularity: 94,
+  },
+];
 
 export default function Profile() {
+  const { user, updateProfile, deleteAccount } = useAuth();
+  const { trips: contextTrips } = useTrip();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const { trips } = useTrip();
 
-  const [savedSuccess, setSavedSuccess] = useState(false);
-  const [bio, setBio] = useState('Passionate traveller exploring hidden gems around the globe ✈️🌏');
-  const [homeCity, setHomeCity] = useState('Mumbai, India');
+  const [isEditing, setIsEditing] = useState(false);
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [city, setCity] = useState(user?.city || "");
+  const [country, setCountry] = useState(user?.country || "");
+  const [photo, setPhoto] = useState(user?.photo || "");
+  const [language, setLanguage] = useState(user?.language || "en");
 
-  const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-    : 'U';
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loadingTrips, setLoadingTrips] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const totalDestinations = new Set(trips.flatMap(t => t.sections.map(s => s.country))).size;
-  const totalActivities = trips.reduce((s, t) => s + t.sections.reduce((s2, sec) => s2 + sec.activities.length, 0), 0);
-  const totalBudgetSpent = trips.reduce((s, t) => s + Number(t.totalBudget || 0), 0);
+  const [savedCitiesList, setSavedCitiesList] = useState<City[]>([]);
+  const [loadingCities, setLoadingCities] = useState(true);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  // Sync state if user changes
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setEmail(user.email || "");
+      setPhone(user.phone || "");
+      setCity(user.city || "");
+      setCountry(user.country || "");
+      setPhoto(user.photo || "");
+      setLanguage(user.language || "en");
+    }
+  }, [user]);
+
+  // Load Trips and Saved Destinations
+  useEffect(() => {
+    try {
+      const storedTrips = localStorage.getItem("globeTrotter_trips");
+      if (storedTrips) {
+        setTrips(JSON.parse(storedTrips));
+      } else if (contextTrips && contextTrips.length > 0) {
+        setTrips(contextTrips);
+      } else {
+        setTrips([]);
+      }
+    } catch (err) {
+      console.error("Failed to load trips", err);
+      setTrips([]);
+    } finally {
+      setLoadingTrips(false);
+    }
+
+    try {
+      const savedIds: string[] = JSON.parse(
+        localStorage.getItem("globeTrotter_savedDestinations") || "[]"
+      );
+      const filtered = DEFAULT_CITIES.filter((c) => savedIds.includes(c.id));
+      setSavedCitiesList(filtered.length > 0 ? filtered : DEFAULT_CITIES.slice(0, 3));
+    } catch (err) {
+      console.error("Failed to load saved cities", err);
+      setSavedCitiesList(DEFAULT_CITIES.slice(0, 3));
+    } finally {
+      setLoadingCities(false);
+    }
+  }, [contextTrips]);
+
+  async function handleSave(e: FormEvent) {
     e.preventDefault();
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    setError("");
+    setSuccess("");
+    setSaveLoading(true);
+
+    try {
+      await updateProfile({
+        firstName,
+        lastName,
+        email,
+        phone: phone || null,
+        city: city || null,
+        country: country || null,
+        photo: photo || null,
+        language,
+      });
+      setSuccess("Profile updated successfully!");
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSaveLoading(false);
+    }
+  }
+
+  function handleCancel() {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setEmail(user.email || "");
+      setPhone(user.phone || "");
+      setCity(user.city || "");
+      setCountry(user.country || "");
+      setPhoto(user.photo || "");
+      setLanguage(user.language || "en");
+    }
+    setIsEditing(false);
+    setError("");
+    setSuccess("");
+  }
+
+  const handleRemoveSavedCity = (cityId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const savedIds: string[] = JSON.parse(
+      localStorage.getItem("globeTrotter_savedDestinations") || "[]"
+    );
+    const updated = savedIds.filter((id) => id !== cityId);
+    localStorage.setItem("globeTrotter_savedDestinations", JSON.stringify(updated));
+    setSavedCitiesList((prev) => prev.filter((c) => c.id !== cityId));
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  async function handleDeleteAccount() {
+    if (
+      !window.confirm(
+        "Are you absolutely sure you want to delete your account? This will permanently delete your profile and all created itineraries. This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setError("");
+    setDeleteLoading(true);
+    try {
+      await deleteAccount();
+      navigate("/login", { replace: true });
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete account");
+      setDeleteLoading(false);
+    }
+  }
+
+  // Group Trips into Preplanned (Future) and Previous (Past)
+  const now = new Date();
+  const preplannedTrips = trips.filter((trip) => {
+    if (!trip.startDate) return true;
+    return new Date(trip.startDate) >= now;
+  });
+  const previousTrips = trips.filter((trip) => {
+    if (!trip.startDate) return false;
+    return new Date(trip.startDate) < now;
+  });
+
+  const initials = user
+    ? `${(user.firstName || user.name || "U")[0]}${(user.lastName || "")[0] || ""}`.toUpperCase()
+    : "?";
+
+  const fallbackTripImages = [
+    "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
+  ];
 
   return (
-    <div className="min-h-screen bg-roamora-bg text-roamora-text font-body">
+    <div className="min-h-screen bg-[#F4F0E8] text-[#17251D] font-body pb-24">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 md:px-8 py-8 pb-24">
-        {/* ── Profile Header Card ── */}
-        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mb-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-r from-roamora-green via-emerald-600 to-teal-600" />
-          
-          <div className="relative pt-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-2 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
-              <div className="w-24 h-24 rounded-full bg-roamora-green text-white text-3xl font-display font-bold border-4 border-white shadow-md flex items-center justify-center">
-                {initials}
-              </div>
-              <div className="mb-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <h1 className="font-display text-2xl md:text-3xl font-bold text-gray-900">{user?.name || 'Globetrotter Member'}</h1>
-                  <span className="bg-roamora-green/10 text-roamora-green text-xs font-bold px-2.5 py-0.5 rounded-full capitalize">
-                    {user?.role || 'Member'}
+      <main className="px-6 md:px-8 max-w-6xl mx-auto mt-8">
+        <h1
+          className="text-4xl text-[#173B2B] mb-8 font-semibold"
+          style={{ fontFamily: "Georgia, serif" }}
+        >
+          My Profile
+        </h1>
+
+        {/* User details card */}
+        <section className="bg-white/70 backdrop-blur-md border border-[#D8D1C3] shadow-[0_20px_60px_rgba(23,59,43,0.05)] rounded-2xl p-6 md:p-8 mb-12">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            {/* Avatar Column */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-32 h-32 rounded-full border-2 border-[#A88A4A]/60 bg-[#EEE9DF] flex items-center justify-center relative overflow-hidden shadow-md">
+                {photo ? (
+                  <img src={photo} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-display font-semibold text-[#173B2B]">
+                    {initials}
                   </span>
-                </div>
-                <p className="text-gray-500 text-sm flex items-center justify-center sm:justify-start gap-1.5 mt-1">
-                  <Mail size={14} className="text-gray-400" />
-                  {user?.email || 'user@globetrotter.app'}
-                </p>
+                )}
               </div>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold transition-colors shrink-0"
-            >
-              <LogOut size={16} /> Log out
-            </button>
-          </div>
-
-          {/* ── Stats Row ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="p-4 bg-gray-50 rounded-2xl text-center">
-              <div className="flex justify-center mb-1 text-roamora-green"><Briefcase size={18} /></div>
-              <div className="font-display text-2xl font-bold text-gray-900">{trips.length}</div>
-              <div className="text-xs text-gray-500 font-medium">Trips Planned</div>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-2xl text-center">
-              <div className="flex justify-center mb-1 text-blue-500"><MapPin size={18} /></div>
-              <div className="font-display text-2xl font-bold text-gray-900">{totalDestinations}</div>
-              <div className="text-xs text-gray-500 font-medium">Countries</div>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-2xl text-center">
-              <div className="flex justify-center mb-1 text-purple-500"><Calendar size={18} /></div>
-              <div className="font-display text-2xl font-bold text-gray-900">{totalActivities}</div>
-              <div className="text-xs text-gray-500 font-medium">Activities</div>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-2xl text-center">
-              <div className="flex justify-center mb-1 text-amber-500"><Sparkles size={18} /></div>
-              <div className="font-display text-2xl font-bold text-gray-900">
-                ₹{totalBudgetSpent > 100000 ? `${(totalBudgetSpent / 100000).toFixed(1)}L` : totalBudgetSpent.toLocaleString('en-IN')}
-              </div>
-              <div className="text-xs text-gray-500 font-medium">Total Budget</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Personal Info & Preferences ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-            <h2 className="font-display text-xl font-bold text-gray-900 mb-6">Profile Settings</h2>
-
-            {savedSuccess && (
-              <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-700 text-sm font-medium">
-                <CheckCircle size={18} />
-                Profile details updated successfully!
-              </div>
-            )}
-
-            <form onSubmit={handleSaveProfile} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              {isEditing && (
+                <div className="w-full max-w-xs">
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider text-center mb-1">
+                    Photo URL
+                  </label>
                   <input
-                    type="text"
-                    disabled
-                    value={user?.name || ''}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 font-medium cursor-not-allowed"
+                    type="url"
+                    placeholder="https://example.com/photo.jpg"
+                    value={photo}
+                    onChange={(e) => setPhoto(e.target.value)}
+                    className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-3 py-1.5 text-xs text-[#17251D] focus:outline-none focus:border-[#173B2B]"
                   />
                 </div>
+              )}
+              <div className="flex items-center gap-1.5 text-xs text-[#A88A4A] font-semibold tracking-wider uppercase">
+                <Shield size={14} /> {user?.role || "USER"}
+              </div>
+            </div>
+
+            {/* Form Details Column */}
+            <form onSubmit={handleSave} className="flex-1 w-full space-y-6">
+              <div className="flex justify-between items-center border-b border-[#D8D1C3] pb-4 mb-4">
+                <h2
+                  className="text-2xl text-[#173B2B]"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  Personal Information
+                </h2>
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#A88A4A] hover:text-[#173B2B] transition"
+                  >
+                    <Edit2 size={14} /> Edit Profile
+                  </button>
+                ) : (
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-600 hover:text-red-800 transition"
+                    >
+                      <X size={14} /> Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saveLoading}
+                      className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-green-700 hover:text-green-950 transition"
+                    >
+                      <Check size={14} /> {saveLoading ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="email"
-                    disabled
-                    value={user?.email || ''}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 font-medium cursor-not-allowed"
-                  />
+              {error && (
+                <div className="px-4 py-3 border border-red-300 bg-red-50 text-red-700 text-sm rounded-md">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="px-4 py-3 border border-green-300 bg-green-50 text-green-700 text-sm rounded-md">
+                  {success}
+                </div>
+              )}
+
+              {/* Grid fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    First Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B] focus:ring-1 focus:ring-[#173B2B]/20"
+                      required
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.firstName || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    Last Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B] focus:ring-1 focus:ring-[#173B2B]/20"
+                      required
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.lastName || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    Email Address
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B] focus:ring-1 focus:ring-[#173B2B]/20"
+                      required
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.email || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    Phone Number
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B] focus:ring-1 focus:ring-[#173B2B]/20"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.phone || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    City
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B]"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.city || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    Country
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B]"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">{user?.country || "—"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-[#435248] uppercase tracking-wider mb-2">
+                    Preferred Language
+                  </label>
+                  {isEditing ? (
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full bg-[#F8F5EF] border border-[#D8D1C3] rounded-md px-4 py-3 text-sm text-[#17251D] focus:outline-none focus:border-[#173B2B]"
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Español</option>
+                      <option value="fr">Français</option>
+                      <option value="de">Deutsch</option>
+                    </select>
+                  ) : (
+                    <p className="text-sm font-medium py-1.5 uppercase">{user?.language || "en"}</p>
+                  )}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Home City / Base</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    value={homeCity}
-                    onChange={(e) => setHomeCity(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-roamora-green outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Bio</label>
-                <textarea
-                  rows={3}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:border-roamora-green outline-none resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-roamora-green text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-emerald-700 transition-colors shadow-sm text-sm"
-              >
-                Save Changes
-              </button>
             </form>
           </div>
+        </section>
 
-          <div className="space-y-6">
-            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-              <h3 className="font-display text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Award size={18} className="text-roamora-gold" />
-                Badges & Status
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center gap-3">
-                  <div className="text-2xl">🌱</div>
-                  <div>
-                    <p className="text-xs font-bold text-emerald-800">Early Explorer</p>
-                    <p className="text-[11px] text-emerald-600">Joined GlobeTrotter beta</p>
-                  </div>
-                </div>
-                <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center gap-3">
-                  <div className="text-2xl">🧭</div>
-                  <div>
-                    <p className="text-xs font-bold text-blue-800">Master Planner</p>
-                    <p className="text-[11px] text-blue-600">Configured custom itineraries</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-roamora-green/10 via-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100">
-              <h3 className="font-display text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <Heart size={18} className="text-rose-500" />
-                Quick Links
-              </h3>
-              <p className="text-xs text-gray-600 mb-4">Jump straight into managing your trips or discovering new community spots.</p>
-              <div className="space-y-2">
-                <button
-                  onClick={() => navigate('/my-trips')}
-                  className="w-full text-left bg-white px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-800 shadow-sm hover:bg-gray-50 flex items-center justify-between"
-                >
-                  <span>View All Saved Trips</span>
-                  <span>→</span>
-                </button>
-                <button
-                  onClick={() => navigate('/community')}
-                  className="w-full text-left bg-white px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-800 shadow-sm hover:bg-gray-50 flex items-center justify-between"
-                >
-                  <span>Community Shared Plans</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
+        {/* Saved Destinations List Section */}
+        <section className="mb-12">
+          <div className="flex justify-between items-end mb-6 border-b border-[#D8D1C3] pb-2">
+            <h2
+              className="text-3xl text-[#173B2B]"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Saved Destinations
+            </h2>
           </div>
+          {loadingCities ? (
+            <p className="text-sm text-gray-500">Loading saved destinations...</p>
+          ) : savedCitiesList.length === 0 ? (
+            <div className="bg-white/40 border border-dashed border-[#D8D1C3] rounded-xl p-8 text-center text-gray-500 text-sm">
+              No saved destinations yet. Explore and bookmark cities from the main feed!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {savedCitiesList.map((city) => (
+                <div
+                  key={city.id}
+                  className="group relative rounded-2xl overflow-hidden aspect-square cursor-pointer shadow-md"
+                  onClick={() => navigate("/create-trip", { state: { cityId: city.id, cityName: city.name } })}
+                >
+                  <img
+                    src={
+                      city.imageUrl ||
+                      "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&w=800&q=80"
+                    }
+                    alt={city.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <button
+                    onClick={(e) => handleRemoveSavedCity(city.id, e)}
+                    className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-red-500 hover:bg-white transition-all shadow-sm"
+                    title="Remove from saved"
+                  >
+                    <Heart size={16} className="fill-red-500 text-red-500" />
+                  </button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
+                    <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm w-max px-2.5 py-1 rounded-full text-white text-xs font-medium mb-3">
+                      <MapPin size={12} /> {city.name}
+                    </div>
+                    <h3 className="text-white font-display text-xl font-medium drop-shadow-md">
+                      {city.name}
+                    </h3>
+                    <p className="text-white/90 text-sm mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md">
+                      {city.country}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Trips Section */}
+        <section className="space-y-12 mb-16">
+          {/* Preplanned Trips Grid */}
+          <div>
+            <div className="flex justify-between items-end mb-6 border-b border-[#D8D1C3] pb-2">
+              <h2
+                className="text-3xl text-[#173B2B]"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                Preplanned Trips
+              </h2>
+            </div>
+            {loadingTrips ? (
+              <p className="text-sm text-gray-500">Loading trips...</p>
+            ) : preplannedTrips.length === 0 ? (
+              <div className="bg-white/40 border border-dashed border-[#D8D1C3] rounded-xl p-8 text-center text-gray-500 text-sm">
+                No preplanned trips found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {preplannedTrips.map((trip, idx) => (
+                  <div
+                    key={trip.id}
+                    className="bg-white border border-[#D8D1C3] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="h-44 overflow-hidden bg-gray-100">
+                        <img
+                          src={trip.coverImage || fallbackTripImages[idx % fallbackTripImages.length]}
+                          alt={trip.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-5">
+                        <h3 className="text-lg font-semibold text-[#173B2B] font-display mb-1">
+                          {trip.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
+                          <MapPin size={12} className="text-[#A88A4A]" /> {trip.destination || "Various"}
+                        </div>
+                        {trip.startDate && (
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <Calendar size={12} /> {new Date(trip.startDate).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5 pt-0">
+                      <button
+                        onClick={() => navigate(`/view-itinerary/${trip.id}`)}
+                        className="w-full text-center bg-[#173B2B] hover:bg-[#102E21] text-white py-2 rounded-md text-xs font-semibold tracking-wider uppercase transition"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Previous Trips Grid */}
+          <div>
+            <div className="flex justify-between items-end mb-6 border-b border-[#D8D1C3] pb-2">
+              <h2
+                className="text-3xl text-[#173B2B]"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                Previous Trips
+              </h2>
+            </div>
+            {loadingTrips ? (
+              <p className="text-sm text-gray-500">Loading trips...</p>
+            ) : previousTrips.length === 0 ? (
+              <div className="bg-white/40 border border-dashed border-[#D8D1C3] rounded-xl p-8 text-center text-gray-500 text-sm">
+                No previous trips found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {previousTrips.map((trip, idx) => (
+                  <div
+                    key={trip.id}
+                    className="bg-white border border-[#D8D1C3] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="h-44 overflow-hidden bg-gray-100">
+                        <img
+                          src={trip.coverImage || fallbackTripImages[idx % fallbackTripImages.length]}
+                          alt={trip.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-5">
+                        <h3 className="text-lg font-semibold text-[#173B2B] font-display mb-1">
+                          {trip.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
+                          <MapPin size={12} className="text-[#A88A4A]" /> {trip.destination || "Various"}
+                        </div>
+                        {trip.startDate && (
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <Calendar size={12} /> {new Date(trip.startDate).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-5 pt-0">
+                      <button
+                        onClick={() => navigate(`/view-itinerary/${trip.id}`)}
+                        className="w-full text-center bg-[#173B2B] hover:bg-[#102E21] text-white py-2 rounded-md text-xs font-semibold tracking-wider uppercase transition"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Danger Zone Section */}
+        <section className="bg-red-50/50 border border-red-200 rounded-2xl p-6 md:p-8">
+          <h2
+            className="text-2xl text-red-800 mb-2"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            Danger Zone
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            Permanently delete your GlobeTrotter account. Once deleted, you will lose access to all your trips and profile details.
+          </p>
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleteLoading}
+            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg text-sm font-semibold tracking-wider uppercase transition disabled:opacity-50"
+          >
+            <Trash2 size={16} /> {deleteLoading ? "Deleting Account..." : "Delete Account"}
+          </button>
+        </section>
+
+        {/* Footer Brand */}
+        <div className="text-center mt-20 pt-8 border-t border-[#D8D1C3]">
+          <p className="text-xs tracking-[0.3em] uppercase text-[#8A918B]">
+            Discover · Plan · Experience
+          </p>
         </div>
       </main>
     </div>
