@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import { useCommunity } from '@/hooks/useCommunity';
+import { useTrip } from '@/hooks/useTrip';
 import {
   ArrowLeft, MapPin, Calendar, Wallet, Clock, Tag,
   Globe, Lock, CheckCircle, Hotel, Plane, Utensils,
@@ -51,9 +52,23 @@ const SharedItineraryView = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { getCommunityTrip } = useCommunity();
+  const { currentTrip, trips } = useTrip();
 
   const id = searchParams.get('id') ?? '';
-  const entry = getCommunityTrip(id);
+  let entry = getCommunityTrip(id);
+
+  // Fallback to active trip if lookup is pending or matches active trip
+  if (!entry && (currentTrip || trips[0])) {
+    const fallbackTrip = currentTrip || trips[0];
+    entry = {
+      id: id || `community-${Date.now()}`,
+      tripId: fallbackTrip.id,
+      userId: 'me',
+      isPublic: true,
+      sharedAt: new Date().toISOString(),
+      trip: fallbackTrip,
+    };
+  }
 
   if (!entry) {
     return (
