@@ -10,6 +10,13 @@ import CreateTrip from "@/pages/CreateTrip";
 import ItineraryBuilder from "@/pages/ItineraryBuilder";
 import ViewItinerary from "@/pages/ViewItinerary";
 import BudgetView from "@/pages/BudgetView";
+import Community from "@/pages/Community";
+import SharedItineraryView from "@/pages/SharedItineraryView";
+import MyTrips from "@/pages/MyTrips";
+import Profile from "@/pages/Profile";
+import Explore from "@/pages/Explore";
+import CalendarView from "@/pages/CalendarView";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 export default function App() {
   return (
@@ -20,18 +27,18 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Landing />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/itinerary" element={<ItineraryBuilder />} />
             <Route path="/view-itinerary" element={<ViewItinerary />} />
             <Route path="/budget" element={<BudgetView />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/community" element={<Community />} />
+            <Route path="/community/view" element={<SharedItineraryView />} />
+            <Route path="/my-trips" element={<MyTrips />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/calendar" element={<CalendarView />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </TripProvider>
       </AuthProvider>

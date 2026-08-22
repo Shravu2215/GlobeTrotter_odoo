@@ -1,8 +1,21 @@
+import { useState } from 'react';
 import { Search, Filter, ArrowDownWideNarrow, Plus, MapPin, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const [landingSearch, setLandingSearch] = useState('');
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (landingSearch.trim()) {
+      navigate('/explore', { state: { initialSearch: landingSearch.trim() } });
+    } else {
+      navigate('/explore');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-roamora-bg text-roamora-text font-body">
       {/* Header */}
@@ -24,28 +37,42 @@ const Landing = () => {
         </section>
 
         {/* Search & Filters Bar */}
-        <section className="bg-white rounded-full shadow-lg p-3 flex items-center gap-4 w-full max-w-[90%] mx-auto -mt-[4.5rem] relative z-10 border border-roamora-border">
+        <form onSubmit={handleSearchSubmit} className="bg-white rounded-full shadow-lg p-3 flex items-center gap-4 w-full max-w-[90%] mx-auto -mt-[4.5rem] relative z-10 border border-roamora-border">
           <div className="flex-1 flex items-center pl-6">
             <Search className="text-gray-400 mr-3" size={20} />
             <input 
               type="text" 
+              value={landingSearch}
+              onChange={(e) => setLandingSearch(e.target.value)}
               placeholder="Search destinations..." 
               className="w-full bg-transparent outline-none text-roamora-text placeholder:text-gray-400 font-medium"
             />
           </div>
           
           <div className="flex items-center gap-3 pr-2 border-l border-gray-200 pl-4">
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200">
+            <button 
+              type="button" 
+              onClick={() => navigate('/explore')} 
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200"
+            >
               Group by <ArrowDownWideNarrow size={16} />
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200">
+            <button 
+              type="button" 
+              onClick={() => navigate('/explore')} 
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200"
+            >
               <Filter size={16} /> Filter
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200">
+            <button 
+              type="button" 
+              onClick={() => navigate('/explore')} 
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full hover:bg-gray-50 text-sm font-medium transition-colors text-roamora-text border border-transparent hover:border-gray-200"
+            >
               Sort by <ArrowDownWideNarrow size={16} />
             </button>
           </div>
-        </section>
+        </form>
 
         {/* Top Regional Selections (Square Cards) */}
         <section className="mt-20">
@@ -56,10 +83,14 @@ const Landing = () => {
             {[
               { title: "Santorini", subtitle: "White-washed beauty", image: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", rating: "4.8" },
               { title: "Bali", subtitle: "Tropical paradise", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", rating: "4.7" },
-              { title: "Swiss Alps", subtitle: "Scenic landscapes", image: "https://images.unsplash.com/photo-1531366936310-c73c8a43f8e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", rating: "4.9" },
+              { title: "Swiss Alps", subtitle: "Scenic landscapes", image: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", rating: "4.9" },
               { title: "Maldives", subtitle: "Crystal-clear waters", image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", rating: "4.8" }
             ].map((item, idx) => (
-              <div key={idx} className="group relative rounded-2xl overflow-hidden aspect-square cursor-pointer shadow-md">
+              <div 
+                key={idx} 
+                onClick={() => navigate('/explore', { state: { initialSearch: item.title } })}
+                className="group relative rounded-2xl overflow-hidden aspect-square cursor-pointer shadow-md"
+              >
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 flex flex-col justify-end">
                   <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm w-max px-2.5 py-1 rounded-full text-white text-xs font-medium mb-3">
@@ -87,7 +118,11 @@ const Landing = () => {
               { title: "Kyoto, Japan", date: "Apr 2024", rating: "4.8", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
               { title: "Rome, Italy", date: "Sep 2023", rating: "4.7", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div 
+                key={idx} 
+                onClick={() => navigate('/explore', { state: { initialSearch: item.title.split(',')[0] } })}
+                className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
                 <div className="h-64 overflow-hidden relative">
                   <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-sm font-semibold shadow-sm">
@@ -105,8 +140,8 @@ const Landing = () => {
         </section>
       </main>
 
-      {/* FAB - Plan a trip */}
-      <Link to="/create-trip" className="fixed bottom-8 right-8 bg-roamora-green hover:bg-roamora-greenHover text-white px-6 py-4 rounded-full shadow-[0_8px_30px_rgb(26,58,50,0.4)] flex items-center gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(26,58,50,0.5)] font-medium z-50">
+      {/* FAB - Plan a trip -> leads to Screen 8 (Explore / Search) */}
+      <Link to="/explore" className="fixed bottom-8 right-8 bg-roamora-green hover:bg-roamora-greenHover text-white px-6 py-4 rounded-full shadow-[0_8px_30px_rgb(26,58,50,0.4)] flex items-center gap-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(26,58,50,0.5)] font-medium z-50">
         <Plus size={20} strokeWidth={2.5} />
         Plan a trip
       </Link>

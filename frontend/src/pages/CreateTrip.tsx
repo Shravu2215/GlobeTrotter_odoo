@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Calendar, MapPin } from 'lucide-react';
 import { useTrip } from '@/hooks/useTrip';
@@ -8,11 +8,12 @@ const mockCities = ["Paris, France", "Mumbai, India", "Dubai, UAE", "London, UK"
 
 const CreateTrip = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { createTrip } = useTrip();
 
   const [formData, setFormData] = useState({
     name: '',
-    destination: '',
+    destination: (location.state as { prefillDestination?: string })?.prefillDestination || '',
     startDate: '',
     endDate: '',
     description: ''

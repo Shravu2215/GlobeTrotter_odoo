@@ -1,7 +1,8 @@
 import { useTrip } from '@/hooks/useTrip';
+import { useCommunity } from '@/hooks/useCommunity';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
-import { ArrowLeft, Wallet, AlertTriangle, CheckCircle, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Wallet, AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Share2, CheckCircle2 } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Sightseeing: '#3B82F6',
@@ -19,7 +20,16 @@ const getColor = (category: string) =>
 
 const BudgetView = () => {
   const { currentTrip } = useTrip();
+  const { shareTrip, isTripShared } = useCommunity();
   const navigate = useNavigate();
+
+  const alreadyShared = currentTrip ? isTripShared(currentTrip.id) : false;
+
+  const handleShareToCommunity = () => {
+    if (!currentTrip) return;
+    const entry = shareTrip(currentTrip);
+    navigate(`/community?highlight=${entry.id}`);
+  };
 
   if (!currentTrip) {
     return (
@@ -293,6 +303,35 @@ const BudgetView = () => {
               </div>
             </div>
           )}
+        </div>
+
+
+        {/* ── Share to Community CTA ── */}
+        <div className="mt-10 bg-gradient-to-br from-roamora-green/10 via-emerald-50 to-teal-50 border border-emerald-100 rounded-3xl p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h3 className="font-display text-xl font-bold text-gray-900 mb-1">
+              {alreadyShared ? 'Already shared with the community!' : 'Share your itinerary with the community'}
+            </h3>
+            <p className="text-gray-500 text-sm leading-relaxed max-w-md">
+              {alreadyShared
+                ? 'Your trip is live on the community board. Click to view it alongside other travellers\' itineraries.'
+                : 'Let other globetrotters discover your travel plan. One click — your full itinerary, budget, and activities are published.'}
+            </p>
+          </div>
+          <button
+            onClick={alreadyShared ? () => navigate('/community') : handleShareToCommunity}
+            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-base transition-all shadow-lg shrink-0 ${
+              alreadyShared
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'bg-roamora-green hover:bg-emerald-600 text-white hover:shadow-roamora-green/30 hover:scale-105'
+            }`}
+          >
+            {alreadyShared ? (
+              <><CheckCircle2 size={20} /> View in Community</>
+            ) : (
+              <><Share2 size={20} /> Share to Community</>
+            )}
+          </button>
         </div>
 
       </main>
