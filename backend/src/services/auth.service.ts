@@ -9,33 +9,23 @@ export class AuthService {
   static async register(input: RegisterInput): Promise<{ token: string; user: SanitizedUser }> {
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [{ email: input.email }, { username: input.username }],
+        email: input.email,
       },
     });
 
     if (existingUser) {
-      if (existingUser.email === input.email) {
-        throw new AppError("An account with this email address already exists", 409);
-      }
-      if (existingUser.username === input.username) {
-        throw new AppError("This username is already taken", 409);
-      }
+      throw new AppError("An account with this email address already exists", 409);
     }
 
     const passwordHash = await bcrypt.hash(input.password, 12);
+    
+    const fullName = `${input.firstName || ''} ${input.lastName || ''}`.trim() || 'Traveler';
 
     const user = await prisma.user.create({
       data: {
-        firstName: input.firstName,
-        lastName: input.lastName,
-        username: input.username,
+        name: fullName,
         email: input.email,
-        phone: input.phone || null,
-        city: input.city || null,
-        country: input.country || null,
-        photo: input.photo || null,
-        passwordHash,
-        language: input.language || "en",
+        password: passwordHash,
         role: "USER", // Role is always enforced server-side
       },
     });
@@ -53,7 +43,7 @@ export class AuthService {
       throw new AppError("Invalid email or password", 401);
     }
 
-    const isMatch = await bcrypt.compare(input.password, user.passwordHash);
+    const isMatch = await bcrypt.compare(input.password, user.password);
     if (!isMatch) {
       throw new AppError("Invalid email or password", 401);
     }

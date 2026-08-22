@@ -36,8 +36,8 @@ model Trip {
   numberOfTravelers Int               @default(1)
   totalBudget       Float
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  destinations      TripDestination[]
   tripAttractions   TripAttraction[]
+  destinations      TripDestination[]
 
   @@index([userId])
   @@index([startDate])
@@ -75,18 +75,18 @@ model Destination {
 }
 
 model TripDestination {
-  id               String      @id @default(uuid())
+  id               String           @id @default(uuid())
   tripId           String
   destinationId    String
   visitOrder       Int
   plannedStartDate DateTime?
   plannedEndDate   DateTime?
-  isRequired       Boolean     @default(false)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  destination      Destination @relation(fields: [destinationId], references: [id])
-  trip             Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  isRequired       Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   tripAttractions  TripAttraction[]
+  destination      Destination      @relation(fields: [destinationId], references: [id])
+  trip             Trip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@unique([tripId, destinationId])
   @@unique([tripId, visitOrder])
@@ -95,25 +95,24 @@ model TripDestination {
 }
 
 model TripAttraction {
-  id               String          @id @default(uuid())
-  tripId           String
+  id                String           @id @default(uuid())
+  tripId            String
   tripDestinationId String?
-  attractionId     String
-  scheduledDate    DateTime?
-  order            Int             @default(0)
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  
-  trip             Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  tripDestination  TripDestination? @relation(fields: [tripDestinationId], references: [id], onDelete: Cascade)
-  attraction       Attraction      @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  attractionId      String
+  scheduledDate     DateTime?
+  order             Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  attraction        Attraction       @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  tripDestination   TripDestination? @relation(fields: [tripDestinationId], references: [id], onDelete: Cascade)
+  trip              Trip             @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@index([tripId])
   @@index([attractionId])
 }
 
 model Attraction {
-  id                  String        @id @default(uuid())
+  id                  String           @id @default(uuid())
   destinationId       String
   name                String
   category            String
@@ -122,14 +121,14 @@ model Attraction {
   longitude           Float?
   estimatedVisitHours Float?
   entranceFee         Float?
-  currency            String        @default("EUR")
+  currency            String           @default("EUR")
   averageRating       Float?
   popularityScore     Int?
-  indoorOutdoor       IndoorOutdoor @default(BOTH)
-  recommended         Boolean       @default(true)
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  destination         Destination   @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  indoorOutdoor       IndoorOutdoor    @default(BOTH)
+  recommended         Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  destination         Destination      @relation(fields: [destinationId], references: [id], onDelete: Cascade)
   tripAttractions     TripAttraction[]
 
   @@index([destinationId])

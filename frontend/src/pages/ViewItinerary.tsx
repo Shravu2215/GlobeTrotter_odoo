@@ -18,6 +18,7 @@ import {
 
 // --- Native Date Utilities ---
 const parseDateStr = (dateStr: string) => {
+  if (dateStr.includes('T')) return new Date(dateStr);
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);
 };

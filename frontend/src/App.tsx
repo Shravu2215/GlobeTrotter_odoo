@@ -27,12 +27,12 @@ export default function App() {
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/" element={<Landing />} />
-            <Route path="/explore" element={<Explore />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/community/view" element={<SharedItineraryView />} />
-            
             <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Landing />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/community/view" element={<SharedItineraryView />} />
+              
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-trip" element={<CreateTrip />} />
               <Route path="/itinerary" element={<ItineraryBuilder />} />

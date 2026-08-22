@@ -86,14 +86,17 @@ const ItineraryBuilder = () => {
             name: a.name,
             category: a.category,
             cost: Number(a.cost),
-            image: a.image,
+            image: a.image || `https://source.unsplash.com/400x300/?${encodeURIComponent(a.category)},${encodeURIComponent(section.city)}`,
             time: 'Flexible',
-            openTime: '09:00',
-            closeTime: '18:00',
-            operatingHours: '09:00 - 18:00',
-            duration: '2-3 hours',
+            openTime: '09:00 AM',
+            closeTime: '06:00 PM',
+            operatingHours: '09:00 AM - 06:00 PM',
+            duration: a.duration || '2-3 hours',
             locationArea: section.city
           }));
+          setAvailableActivities(mapped);
+        } else {
+          setAvailableActivities([]);
         }
       })
       .catch(err => {
@@ -144,10 +147,8 @@ const ItineraryBuilder = () => {
   };
 
   const getSectionDays = (startDateStr: string, endDateStr: string) => {
-    const [y1, m1, d1] = startDateStr.split('-').map(Number);
-    const [y2, m2, d2] = endDateStr.split('-').map(Number);
-    const start = new Date(y1, m1 - 1, d1);
-    const end = new Date(y2, m2 - 1, d2);
+    const start = startDateStr.includes('T') ? new Date(startDateStr) : new Date(startDateStr.split('-')[0] as any, (startDateStr.split('-')[1] as any) - 1, startDateStr.split('-')[2] as any);
+    const end = endDateStr.includes('T') ? new Date(endDateStr) : new Date(endDateStr.split('-')[0] as any, (endDateStr.split('-')[1] as any) - 1, endDateStr.split('-')[2] as any);
     const daysDiff = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
     const days: string[] = [];
     for (let i = 0; i <= daysDiff; i++) {

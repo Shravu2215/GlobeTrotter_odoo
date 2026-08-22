@@ -61,7 +61,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const createTrip = async (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/trips", {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${baseUrl}/api/trips`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +156,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
     
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/trips/${currentTrip.id}/itinerary`, {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${baseUrl}/api/trips/${currentTrip.id}/itinerary`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +168,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
       if (!res.ok) throw new Error("Failed to save itinerary");
       
       // Optionally reload the trips list
-      const tripRes = await fetch("http://localhost:5000/api/trips", {
+      const tripRes = await fetch(`${baseUrl}/api/trips`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (tripRes.ok) {
@@ -181,7 +183,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const loadTrip = async (tripId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${baseUrl}/api/trips/${tripId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to load trip");
