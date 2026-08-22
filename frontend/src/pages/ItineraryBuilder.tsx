@@ -135,7 +135,6 @@ const ItineraryBuilder = () => {
 
     addSection({
       city: stopForm.city,
-      cityId: stopForm.cityId,
       country: '',
       startDate: stopForm.startDate,
       endDate: stopForm.endDate,

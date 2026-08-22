@@ -61,7 +61,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const createTrip = async (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => {
     try {
       const token = localStorage.getItem("token");
-      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const baseUrl = (import.meta as any).env.VITE_API_URL || '';
       const res = await fetch(`${baseUrl}/api/trips`, {
         method: "POST",
         headers: {
@@ -156,7 +156,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     
     try {
       const token = localStorage.getItem("token");
-      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const baseUrl = (import.meta as any).env.VITE_API_URL || '';
       const res = await fetch(`${baseUrl}/api/trips/${currentTrip.id}/itinerary`, {
         method: "PUT",
         headers: {
@@ -183,7 +183,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const loadTrip = async (tripId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const baseUrl = (import.meta as any).env.VITE_API_URL || '';
       const res = await fetch(`${baseUrl}/api/trips/${tripId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
