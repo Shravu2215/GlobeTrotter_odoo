@@ -218,12 +218,19 @@ export function useCommunity() {
     };
     setCommunityTrips(prev => {
       const exists = prev.findIndex(ct => ct.tripId === trip.id);
+      let updated: CommunityTrip[];
       if (exists !== -1) {
-        const updated = [...prev];
+        updated = [...prev];
         updated[exists] = newEntry;
-        return updated;
+      } else {
+        updated = [newEntry, ...prev];
       }
-      return [newEntry, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
     });
     return newEntry;
   }, []);
@@ -234,7 +241,18 @@ export function useCommunity() {
   );
 
   const getCommunityTrip = useCallback(
-    (id: string) => communityTrips.find(ct => ct.id === id) ?? null,
+    (id: string) => {
+      const found = communityTrips.find(ct => ct.id === id || ct.tripId === id);
+      if (found) return found;
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const list = JSON.parse(stored) as CommunityTrip[];
+          return list.find(ct => ct.id === id || ct.tripId === id) ?? null;
+        }
+      } catch {}
+      return null;
+    },
     [communityTrips],
   );
 
