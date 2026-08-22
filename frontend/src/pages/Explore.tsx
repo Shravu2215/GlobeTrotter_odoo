@@ -439,9 +439,48 @@ export default function Explore() {
     setFilterMinRating(0);
   };
 
-  // Combine items
-  const allMasterItems: SearchResultItem[] = useMemo(() => {
-    return [...MASTER_ACTIVITIES, ...MASTER_CITIES];
+  // State for Dynamic Data
+  const [allMasterItems, setAllMasterItems] = useState<SearchResultItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Fetch dynamic data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoadingData(true);
+        // Fetch all cities (which now returns Destination + relations)
+        const res = await fetch('/api/cities');
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        
+        const fetchedItems: SearchResultItem[] = [];
+        
+        // Map database destinations to CityItem
+        data.data.cities.forEach((dest: any) => {
+          fetchedItems.push({
+            id: dest.id,
+            type: 'city',
+            name: dest.cityName,
+            country: dest.country || 'Unknown',
+            flag: '🌍',
+            costIndex: (dest.foodCost?.averageMealCost || 0) > 2000 ? 'High' : 'Moderate',
+            rating: dest.averageRating || 4.5,
+            popularity: dest.popularityScore || 50,
+            image: dest.imageUrl || `https://source.unsplash.com/400x300/?${encodeURIComponent(dest.cityName)}`,
+            description: dest.description || `Explore the beautiful city of ${dest.cityName}`,
+            suggestedActivities: [],
+            bestSeason: dest.seasonalInfo?.[0]?.season || 'Year-round'
+          });
+        });
+
+        setAllMasterItems(fetchedItems);
+      } catch (err) {
+        console.error("Error fetching explore data:", err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // Filtered & Sorted Results

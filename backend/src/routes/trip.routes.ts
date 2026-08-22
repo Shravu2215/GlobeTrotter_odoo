@@ -22,6 +22,7 @@ router.delete("/:id", authenticate, TripController.deleteTrip);
 
 // --- Trip Itinerary & Budget ---
 router.get("/:tripId/itinerary", optionalAuthenticate, ItineraryController.getItinerary);
+router.put("/:id/itinerary", authenticate, TripController.saveItinerary);
 
 // --- Trip Publish ---
 router.patch("/:tripId/publish", authenticate, PublicController.publishTrip);

@@ -4,14 +4,14 @@ import { Trip, Section, Activity } from "@/types/trip";
 interface TripContextType {
   currentTrip: Trip | null;
   trips: Trip[];
-  createTrip: (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => void;
+  createTrip: (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => Promise<void>;
   addSection: (sectionData: Omit<Section, 'id' | 'activities'>) => void;
   updateSection: (sectionId: string, updates: Partial<Section>) => void;
   removeSection: (sectionId: string) => void;
   addActivity: (sectionId: string, activityData: Omit<Activity, 'id'>) => void;
   removeActivity: (sectionId: string, activityId: string) => void;
-  saveItinerary: () => void;
-  loadTrip: (tripId: string) => void;
+  saveItinerary: () => Promise<void>;
+  loadTrip: (tripId: string) => Promise<void>;
 }
 
 const TripContext = createContext<TripContextType | undefined>(undefined);
@@ -58,14 +58,23 @@ export function TripProvider({ children }: { children: ReactNode }) {
     return sections.reduce((sum, section) => sum + Number(section.budget), 0);
   };
 
-  const createTrip = (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => {
-    const newTrip: Trip = {
-      ...tripData,
-      id: crypto.randomUUID(),
-      sections: [],
-      totalBudget: 0
-    };
-    setCurrentTrip(newTrip);
+  const createTrip = async (tripData: Omit<Trip, 'id' | 'sections' | 'totalBudget'>) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/trips", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(tripData)
+      });
+      if (!res.ok) throw new Error("Failed to create trip");
+      const data = await res.json();
+      setCurrentTrip({ ...data.data.trip, sections: [] });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const addSection = (sectionData: Omit<Section, 'id' | 'activities'>) => {
@@ -141,25 +150,66 @@ export function TripProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const saveItinerary = () => {
+  const saveItinerary = async () => {
     if (!currentTrip) return;
     
-    // Check if trip exists, update or add
-    setTrips(prev => {
-      const exists = prev.findIndex(t => t.id === currentTrip.id);
-      if (exists >= 0) {
-        const newTrips = [...prev];
-        newTrips[exists] = currentTrip;
-        return newTrips;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/trips/${currentTrip.id}/itinerary`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ sections: currentTrip.sections })
+      });
+      if (!res.ok) throw new Error("Failed to save itinerary");
+      
+      // Optionally reload the trips list
+      const tripRes = await fetch("http://localhost:5000/api/trips", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (tripRes.ok) {
+        const tripData = await tripRes.json();
+        setTrips(tripData.data.trips);
       }
-      return [...prev, currentTrip];
-    });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const loadTrip = (tripId: string) => {
-    const tripToLoad = trips.find(t => t.id === tripId);
-    if (tripToLoad) {
-      setCurrentTrip(tripToLoad);
+  const loadTrip = async (tripId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to load trip");
+      const data = await res.json();
+      const trip = data.data.trip;
+      
+      // Map database destinations/attractions to frontend "sections" structure
+      const sections = trip.destinations.map((d: any) => ({
+        id: d.id,
+        cityId: d.destinationId,
+        cityName: d.destination.cityName,
+        order: d.visitOrder,
+        budget: 0, // Simplified, should ideally pull real cost here or rely on trip.totalBudget
+        activities: trip.tripAttractions
+          .filter((a: any) => a.tripDestinationId === d.id)
+          .map((a: any) => ({
+            id: a.attractionId,
+            name: a.attraction.name,
+            cost: a.attraction.entranceFee || 0,
+            image: a.attraction.imageUrl,
+            category: a.attraction.category,
+            scheduledDate: a.scheduledDate
+          }))
+      }));
+      
+      setCurrentTrip({ ...trip, sections });
+    } catch (e) {
+      console.error(e);
     }
   };
 

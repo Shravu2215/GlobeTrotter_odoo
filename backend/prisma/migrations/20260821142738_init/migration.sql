@@ -17,5 +17,6 @@ CREATE TABLE "User" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
+
 -- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");

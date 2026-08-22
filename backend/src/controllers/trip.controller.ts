@@ -61,4 +61,18 @@ export class TripController {
       next(err);
     }
   }
+
+  static async saveItinerary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const trip = await TripService.saveItinerary(req.user!.id, req.params.id, req.body);
+      const io = req.app.get("io");
+      if (io) {
+        io.to(`trip:${req.params.id}`).emit("trip:updated", trip);
+        io.to(`user:${req.user!.id}`).emit("trip:updated", trip);
+      }
+      return sendSuccess(res, { trip }, "Itinerary saved successfully", 200);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

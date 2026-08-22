@@ -8,7 +8,7 @@ export class CityService {
 
     if (query.search) {
       where.OR = [
-        { name: { contains: query.search, mode: "insensitive" } },
+        { cityName: { contains: query.search, mode: "insensitive" } },
         { country: { contains: query.search, mode: "insensitive" } },
       ];
     }
@@ -17,52 +17,64 @@ export class CityService {
       where.country = { contains: query.country, mode: "insensitive" };
     }
 
-    const cities = await prisma.city.findMany({
+    const destinations = await prisma.destination.findMany({
       where,
-      orderBy: [{ popularity: "desc" }, { name: "asc" }],
+      orderBy: [{ cityName: "asc" }],
       include: {
         _count: {
-          select: { activities: true },
+          select: { attractions: true },
         },
+        accommodation: true,
+        foodCost: true,
+        seasonalInfo: true,
+        outgoingTransport: {
+          include: {
+            destination: true
+          }
+        }
       },
     });
 
-    return cities;
+    return destinations.map(d => ({
+      ...d,
+      id: d.id, // Ensure frontend compatibility
+      name: d.cityName
+    }));
   }
 
   static async getCityActivities(cityId: string, query: ActivityQueryInput) {
-    const city = await prisma.city.findUnique({
+    const destination = await prisma.destination.findUnique({
       where: { id: cityId },
     });
 
-    if (!city) {
+    if (!destination) {
       throw new AppError("City not found", 404);
     }
 
     const where: any = {
-      cityId,
+      destinationId: cityId,
     };
-
-    if (query.type) {
-      where.type = query.type;
-    }
 
     if (query.category) {
       where.category = query.category;
     }
 
     if (query.maxCost !== undefined) {
-      where.cost = { lte: query.maxCost };
+      where.entranceFee = { lte: query.maxCost };
     }
 
-    const activities = await prisma.activity.findMany({
+    const attractions = await prisma.attraction.findMany({
       where,
-      orderBy: [{ cost: "asc" }, { name: "asc" }],
+      orderBy: [{ entranceFee: "asc" }, { name: "asc" }],
     });
 
     return {
-      city,
-      activities,
+      city: destination,
+      activities: attractions.map(a => ({
+        ...a,
+        cost: a.entranceFee,
+        image: a.imageUrl || `https://source.unsplash.com/400x300/?${encodeURIComponent(a.category)},${encodeURIComponent(destination.cityName)}`
+      })),
     };
   }
 }

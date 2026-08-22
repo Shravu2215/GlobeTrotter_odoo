@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Calendar, MapPin } from 'lucide-react';
 import { useTrip } from '@/hooks/useTrip';
 
-const mockCities = ["Paris, France", "Mumbai, India", "Dubai, UAE", "London, UK", "Tokyo, Japan", "Switzerland", "Rome, Italy"];
 
 const CreateTrip = () => {
   const navigate = useNavigate();
@@ -21,6 +20,28 @@ const CreateTrip = () => {
   
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+
+  useEffect(() => {
+    if (!formData.destination || formData.destination.length < 2) {
+      setDestinationSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsSearchingDest(true);
+      fetch(`/api/cities?search=${encodeURIComponent(formData.destination)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.data?.cities) {
+            setDestinationSuggestions(data.data.cities);
+            setShowSuggestions(true);
+          }
+        })
+        .finally(() => setIsSearchingDest(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData.destination]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,7 +56,7 @@ const CreateTrip = () => {
     setShowSuggestions(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (!formData.name || !formData.destination || !formData.startDate || !formData.endDate) {
       setError('Please fill in all required fields.');
@@ -47,11 +68,11 @@ const CreateTrip = () => {
       return;
     }
 
-    createTrip(formData);
+    await createTrip(formData);
     navigate('/itinerary');
   };
 
-  const filteredCities = mockCities.filter(c => c.toLowerCase().includes(formData.destination.toLowerCase()));
+
 
   return (
     <div className="min-h-screen bg-roamora-bg text-roamora-text font-body">
@@ -101,18 +122,21 @@ const CreateTrip = () => {
                   placeholder="🔍 Search destination..."
                   className="w-full bg-roamora-bg/50 border border-gray-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-roamora-green transition-colors"
                 />
+                {isSearchingDest && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-roamora-green/30 border-t-roamora-green rounded-full animate-spin" />
+                )}
               </div>
               
-              {showSuggestions && formData.destination && filteredCities.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-60 overflow-y-auto">
-                  <div className="p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Suggested Destinations</div>
-                  {filteredCities.map((city, idx) => (
+              {showSuggestions && destinationSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                  {destinationSuggestions.map((dest: any) => (
                     <div 
-                      key={idx} 
-                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-700 font-medium border-t border-gray-50"
-                      onMouseDown={() => selectCity(city)} // Use onMouseDown to prevent blur from hiding it before click
+                      key={dest.id} 
+                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-gray-700 font-medium border-t border-gray-50 flex items-center justify-between"
+                      onMouseDown={() => selectCity(dest.cityName)} // Use onMouseDown to prevent blur from hiding it before click
                     >
-                      {city}
+                      <span>{dest.cityName}</span>
+                      <span className="text-gray-400 text-sm font-normal">{dest.country}</span>
                     </div>
                   ))}
                 </div>

@@ -27,18 +27,21 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Landing />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/create-trip" element={<CreateTrip />} />
-            <Route path="/itinerary" element={<ItineraryBuilder />} />
-            <Route path="/view-itinerary" element={<ViewItinerary />} />
-            <Route path="/budget" element={<BudgetView />} />
+            <Route path="/explore" element={<Explore />} />
             <Route path="/community" element={<Community />} />
             <Route path="/community/view" element={<SharedItineraryView />} />
-            <Route path="/my-trips" element={<MyTrips />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/explore" element={<Explore />} />
-            <Route path="/calendar" element={<CalendarView />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-trip" element={<CreateTrip />} />
+              <Route path="/itinerary" element={<ItineraryBuilder />} />
+              <Route path="/view-itinerary" element={<ViewItinerary />} />
+              <Route path="/budget" element={<BudgetView />} />
+              <Route path="/my-trips" element={<MyTrips />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/calendar" element={<CalendarView />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Route>
           </Routes>
         </TripProvider>
       </AuthProvider>

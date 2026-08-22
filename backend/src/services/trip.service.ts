@@ -9,20 +9,26 @@ export class TripService {
         userId,
         name: input.name,
         description: input.description || null,
-        coverPhoto: input.coverPhoto || null,
+        coverImage: input.coverPhoto || null,
         startDate: new Date(input.startDate),
         endDate: new Date(input.endDate),
-        isPublic: input.isPublic || false,
+        visibility: input.isPublic ? "PUBLIC" : "PRIVATE",
+        totalBudget: 0,
       },
       include: {
-        sections: {
+        destinations: {
           include: {
-            city: true,
+            destination: true,
           },
           orderBy: {
-            order: "asc",
+            visitOrder: "asc",
           },
         },
+        tripAttractions: {
+          include: {
+            attraction: true
+          }
+        }
       },
     });
 
@@ -34,15 +40,15 @@ export class TripService {
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: {
-        sections: {
+        destinations: {
           include: {
-            city: true,
-            _count: {
-              select: { sectionActivities: true },
-            },
+            destination: true
           },
-          orderBy: { order: "asc" },
+          orderBy: { visitOrder: "asc" },
         },
+        tripAttractions: {
+          include: { attraction: true }
+        }
       },
     });
 
@@ -56,18 +62,16 @@ export class TripService {
         userId, // Enforce strict ownership check
       },
       include: {
-        sections: {
+        destinations: {
           include: {
-            city: true,
-            sectionActivities: {
-              include: {
-                activity: true,
-              },
-              orderBy: { scheduledDate: "asc" },
-            },
+            destination: true
           },
-          orderBy: { order: "asc" },
+          orderBy: { visitOrder: "asc" },
         },
+        tripAttractions: {
+          include: { attraction: true },
+          orderBy: { order: "asc" }
+        }
       },
     });
 
@@ -92,18 +96,21 @@ export class TripService {
       data: {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
-        ...(input.coverPhoto !== undefined ? { coverPhoto: input.coverPhoto } : {}),
+        ...(input.coverPhoto !== undefined ? { coverImage: input.coverPhoto } : {}),
         ...(input.startDate !== undefined ? { startDate: new Date(input.startDate) } : {}),
         ...(input.endDate !== undefined ? { endDate: new Date(input.endDate) } : {}),
-        ...(input.isPublic !== undefined ? { isPublic: input.isPublic } : {}),
+        ...(input.isPublic !== undefined ? { visibility: input.isPublic ? "PUBLIC" : "PRIVATE" } : {}),
       },
       include: {
-        sections: {
+        destinations: {
           include: {
-            city: true,
+            destination: true,
           },
-          orderBy: { order: "asc" },
+          orderBy: { visitOrder: "asc" },
         },
+        tripAttractions: {
+          include: { attraction: true }
+        }
       },
     });
 
@@ -124,5 +131,62 @@ export class TripService {
     });
 
     return { success: true, message: "Trip deleted successfully" };
+  }
+
+  static async saveItinerary(userId: string, tripId: string, itineraryData: any) {
+    const existingTrip = await prisma.trip.findFirst({
+      where: { id: tripId, userId },
+    });
+
+    if (!existingTrip) {
+      throw new AppError("Trip not found", 404);
+    }
+
+    // 1. Delete existing relations
+    await prisma.tripDestination.deleteMany({
+      where: { tripId },
+    });
+    await prisma.tripAttraction.deleteMany({
+      where: { tripId },
+    });
+
+    let totalBudget = 0;
+
+    // 2. Re-create destinations and attractions
+    for (const section of itineraryData.sections || []) {
+      const dest = await prisma.tripDestination.create({
+        data: {
+          tripId,
+          destinationId: section.cityId,
+          visitOrder: section.order || 0,
+        },
+      });
+
+      // Calculate simple budget if passed from frontend
+      totalBudget += Number(section.budget) || 0;
+
+      for (const act of section.activities || []) {
+        await prisma.tripAttraction.create({
+          data: {
+            tripId,
+            tripDestinationId: dest.id,
+            attractionId: act.id,
+            scheduledDate: act.scheduledDate ? new Date(act.scheduledDate) : null,
+          }
+        });
+      }
+    }
+
+    // 3. Update total budget on trip
+    const updatedTrip = await prisma.trip.update({
+      where: { id: tripId },
+      data: { totalBudget },
+      include: {
+        destinations: { include: { destination: true }, orderBy: { visitOrder: "asc" } },
+        tripAttractions: { include: { attraction: true } }
+      }
+    });
+
+    return updatedTrip;
   }
 }

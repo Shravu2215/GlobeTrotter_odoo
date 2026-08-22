@@ -7,6 +7,193 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  trips     Trip[]
+
+  @@index([email])
+}
+
+model Trip {
+  id                String            @id @default(uuid())
+  userId            String
+  name              String
+  description       String?
+  startDate         DateTime
+  endDate           DateTime
+  coverImage        String?
+  visibility        TripVisibility    @default(PRIVATE)
+  shareSlug         String?           @unique
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  currency          String            @default("INR")
+  numberOfTravelers Int               @default(1)
+  totalBudget       Float
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinations      TripDestination[]
+  tripAttractions   TripAttraction[]
+
+  @@index([userId])
+  @@index([startDate])
+}
+
+model Destination {
+  id                String                 @id @default(uuid())
+  cityName          String
+  country           String
+  region            String?
+  latitude          Float?
+  longitude         Float?
+  description       String?
+  averageDailyCost  Float?
+  budgetDailyCost   Float?
+  midRangeDailyCost Float?
+  luxuryDailyCost   Float?
+  recommendedDays   Int?
+  currency          String                 @default("EUR")
+  imageUrl          String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  accommodation     AccommodationCost?
+  attractions       Attraction[]
+  foodCost          FoodCost?
+  seasonalInfo      SeasonalInfo?
+  incomingTransport TransportationOption[] @relation("DestinationDestination")
+  outgoingTransport TransportationOption[] @relation("OriginDestination")
+  tripDestinations  TripDestination[]
+
+  @@unique([cityName, country])
+  @@index([cityName])
+  @@index([country])
+  @@index([region])
+}
+
+model TripDestination {
+  id               String      @id @default(uuid())
+  tripId           String
+  destinationId    String
+  visitOrder       Int
+  plannedStartDate DateTime?
+  plannedEndDate   DateTime?
+  isRequired       Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  destination      Destination @relation(fields: [destinationId], references: [id])
+  trip             Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripAttractions  TripAttraction[]
+
+  @@unique([tripId, destinationId])
+  @@unique([tripId, visitOrder])
+  @@index([tripId])
+  @@index([destinationId])
+}
+
+model TripAttraction {
+  id               String          @id @default(uuid())
+  tripId           String
+  tripDestinationId String?
+  attractionId     String
+  scheduledDate    DateTime?
+  order            Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  
+  trip             Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripDestination  TripDestination? @relation(fields: [tripDestinationId], references: [id], onDelete: Cascade)
+  attraction       Attraction      @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@index([attractionId])
+}
+
+model Attraction {
+  id                  String        @id @default(uuid())
+  destinationId       String
+  name                String
+  category            String
+  description         String?
+  latitude            Float?
+  longitude           Float?
+  estimatedVisitHours Float?
+  entranceFee         Float?
+  currency            String        @default("EUR")
+  averageRating       Float?
+  popularityScore     Int?
+  indoorOutdoor       IndoorOutdoor @default(BOTH)
+  recommended         Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  destination         Destination   @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  tripAttractions     TripAttraction[]
+
+  @@index([destinationId])
+  @@index([category])
+  @@index([popularityScore])
+  @@index([averageRating])
+}
+
+model AccommodationCost {
+  id               String      @id @default(uuid())
+  destinationId    String      @unique
+  budgetPerNight   Float
+  midRangePerNight Float
+  luxuryPerNight   Float
+  currency         String      @default("EUR")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  destination      Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
+model FoodCost {
+  id             String      @id @default(uuid())
+  destinationId  String      @unique
+  budgetPerDay   Float
+  midRangePerDay Float
+  luxuryPerDay   Float
+  currency       String      @default("EUR")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
+model TransportationOption {
+  id                     String        @id @default(uuid())
+  originDestinationId    String
+  destinationId          String
+  transportType          TransportType
+  estimatedCost          Float
+  currency               String        @default("EUR")
+  estimatedDurationHours Float
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  destination            Destination   @relation("DestinationDestination", fields: [destinationId], references: [id], onDelete: Cascade)
+  originDestination      Destination   @relation("OriginDestination", fields: [originDestinationId], references: [id], onDelete: Cascade)
+
+  @@unique([originDestinationId, destinationId, transportType])
+  @@index([originDestinationId])
+  @@index([destinationId])
+  @@index([transportType])
+}
+
+model SeasonalInfo {
+  id                 String      @id @default(uuid())
+  destinationId      String      @unique
+  bestTravelMonths   String?
+  peakSeason         String?
+  offSeason          String?
+  weatherCategory    String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  seasonalMultiplier Float       @default(1.0)
+  destination        Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   ADMIN
   USER
@@ -33,179 +220,4 @@ enum IndoorOutdoor {
   INDOOR
   OUTDOOR
   BOTH
-}
-
-model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  trips Trip[]
-
-  @@index([email])
-}
-
-model Trip {
-  id                String         @id @default(uuid())
-  userId            String
-  name              String
-  description       String?
-  startDate         DateTime
-  endDate           DateTime
-  numberOfTravelers Int            @default(1)
-  totalBudget       Float
-  currency          String         @default("INR")
-  coverImage        String?
-  visibility        TripVisibility @default(PRIVATE)
-  shareSlug         String?        @unique
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  destinations TripDestination[]
-
-  @@index([userId])
-  @@index([startDate])
-}
-
-model Destination {
-  id                String   @id @default(uuid())
-  cityName          String
-  country           String
-  region            String?
-  latitude          Float?
-  longitude         Float?
-  description       String?
-  averageDailyCost  Float?
-  budgetDailyCost   Float?
-  midRangeDailyCost Float?
-  luxuryDailyCost   Float?
-  recommendedDays   Int?
-  currency          String   @default("EUR")
-  imageUrl          String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  tripDestinations  TripDestination[]
-  attractions       Attraction[]
-  accommodation     AccommodationCost?
-  foodCost          FoodCost?
-  outgoingTransport TransportationOption[] @relation("OriginDestination")
-  incomingTransport TransportationOption[] @relation("DestinationDestination")
-  seasonalInfo      SeasonalInfo?
-
-  @@unique([cityName, country])
-  @@index([cityName])
-  @@index([country])
-  @@index([region])
-}
-
-model TripDestination {
-  id               String    @id @default(uuid())
-  tripId           String
-  destinationId    String
-  visitOrder       Int
-  plannedStartDate DateTime?
-  plannedEndDate   DateTime?
-  isRequired       Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  destination Destination @relation(fields: [destinationId], references: [id])
-
-  @@unique([tripId, destinationId])
-  @@unique([tripId, visitOrder])
-  @@index([tripId])
-  @@index([destinationId])
-}
-
-model Attraction {
-  id                  String        @id @default(uuid())
-  destinationId       String
-  name                String
-  category            String
-  description         String?
-  latitude            Float?
-  longitude           Float?
-  estimatedVisitHours Float?
-  entranceFee         Float?
-  currency            String        @default("EUR")
-  averageRating       Float?
-  popularityScore     Int?
-  indoorOutdoor       IndoorOutdoor @default(BOTH)
-  recommended         Boolean       @default(true)
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-
-  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
-
-  @@index([destinationId])
-  @@index([category])
-  @@index([popularityScore])
-  @@index([averageRating])
-}
-
-model AccommodationCost {
-  id               String   @id @default(uuid())
-  destinationId    String   @unique
-  budgetPerNight   Float
-  midRangePerNight Float
-  luxuryPerNight   Float
-  currency         String   @default("EUR")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
-}
-
-model FoodCost {
-  id             String   @id @default(uuid())
-  destinationId  String   @unique
-  budgetPerDay   Float
-  midRangePerDay Float
-  luxuryPerDay   Float
-  currency       String   @default("EUR")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
-}
-
-model TransportationOption {
-  id                     String        @id @default(uuid())
-  originDestinationId    String
-  destinationId          String
-  transportType          TransportType
-  estimatedCost          Float
-  currency               String        @default("EUR")
-  estimatedDurationHours Float
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-
-  originDestination Destination @relation("OriginDestination", fields: [originDestinationId], references: [id], onDelete: Cascade)
-  destination       Destination @relation("DestinationDestination", fields: [destinationId], references: [id], onDelete: Cascade)
-
-  @@unique([originDestinationId, destinationId, transportType])
-  @@index([originDestinationId])
-  @@index([destinationId])
-  @@index([transportType])
-}
-
-model SeasonalInfo {
-  id                 String   @id @default(uuid())
-  destinationId      String   @unique
-  bestTravelMonths   String?
-  peakSeason         String?
-  offSeason          String?
-  weatherCategory    String?
-  seasonalMultiplier Float    @default(1.0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
 }

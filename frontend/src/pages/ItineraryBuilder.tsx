@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Plus, X, Search } from 'lucide-react';
@@ -18,76 +18,92 @@ interface ActivityTemplate {
   locationArea: string;
 }
 
-// City-specific activity pool keyed by lowercase city keywords
-const CITY_ACTIVITIES: Record<string, ActivityTemplate[]> = {
-  paris: [
-    { name: "Eiffel Tower Tour",       category: "Sightseeing", cost: 0,    time: "10:00 AM", openTime: "09:30 AM", closeTime: "11:45 PM", operatingHours: "09:30 AM – 11:45 PM", duration: "2.5 hrs", locationArea: "Champ de Mars, 7th Arr.", image: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=400" },
-    { name: "Louvre Museum",           category: "Museum",      cost: 1500, time: "02:00 PM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "3.0 hrs", locationArea: "Rue de Rivoli, 1st Arr.", image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400" },
-    { name: "French Food Tour",        category: "Food",        cost: 2000, time: "01:00 PM", openTime: "11:30 AM", closeTime: "09:30 PM", operatingHours: "11:30 AM – 09:30 PM", duration: "2.5 hrs", locationArea: "Le Marais Quarter", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
-    { name: "Seine River Cruise",      category: "Sightseeing", cost: 1500, time: "05:00 PM", openTime: "10:00 AM", closeTime: "10:30 PM", operatingHours: "10:00 AM – 10:30 PM", duration: "1.5 hrs", locationArea: "Port de la Bourdonnais", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
-    { name: "Musée d'Orsay",           category: "Museum",      cost: 1200, time: "11:00 AM", openTime: "09:30 AM", closeTime: "06:00 PM", operatingHours: "09:30 AM – 06:00 PM", duration: "2.5 hrs", locationArea: "Esplanade d'Orsay, 7th Arr.", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Palace of Versailles",    category: "Historical",  cost: 2500, time: "09:00 AM", openTime: "09:00 AM", closeTime: "05:30 PM", operatingHours: "09:00 AM – 05:30 PM", duration: "4.0 hrs", locationArea: "Place d'Armes, Versailles", image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400" },
-    { name: "Notre Dame Cathedral",    category: "Historical",  cost: 0,    time: "03:00 PM", openTime: "08:00 AM", closeTime: "06:45 PM", operatingHours: "08:00 AM – 06:45 PM", duration: "1.5 hrs", locationArea: "Île de la Cité, 4th Arr.", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
-    { name: "Montmartre Walking Tour", category: "Sightseeing", cost: 500,  time: "04:00 PM", openTime: "08:30 AM", closeTime: "08:00 PM", operatingHours: "08:30 AM – 08:00 PM", duration: "2.0 hrs", locationArea: "Place du Tertre, 18th Arr.", image: "https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=400" },
-    { name: "Paris Wine Tasting",      category: "Food",        cost: 3000, time: "07:00 PM", openTime: "05:00 PM", closeTime: "11:00 PM", operatingHours: "05:00 PM – 11:00 PM", duration: "2.0 hrs", locationArea: "Latin Quarter, 5th Arr.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400" },
-    { name: "Arc de Triomphe",         category: "Sightseeing", cost: 800,  time: "06:00 PM", openTime: "10:00 AM", closeTime: "10:30 PM", operatingHours: "10:00 AM – 10:30 PM", duration: "1.5 hrs", locationArea: "Place Charles de Gaulle, 8th Arr.", image: "https://images.unsplash.com/photo-1471929873714-39fca87f8abf?w=400" },
-    { name: "Champs-Élysées Shopping", category: "Shopping",    cost: 5000, time: "02:00 PM", openTime: "10:00 AM", closeTime: "08:00 PM", operatingHours: "10:00 AM – 08:00 PM", duration: "2.5 hrs", locationArea: "Avenue des Champs-Élysées", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400" },
-    { name: "Sainte-Chapelle Visit",   category: "Historical",  cost: 1100, time: "10:00 AM", openTime: "09:00 AM", closeTime: "05:00 PM", operatingHours: "09:00 AM – 05:00 PM", duration: "1.5 hrs", locationArea: "Boulevard du Palais, 1st Arr.", image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=400" },
-  ],
-  interlaken: [
-    { name: "Jungfraujoch — Top of Europe", category: "Adventure",   cost: 8000, time: "09:00 AM", openTime: "08:00 AM", closeTime: "05:30 PM", operatingHours: "08:00 AM – 05:30 PM", duration: "5.0 hrs", locationArea: "Jungfrau Alpine Terminal", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Lake Thun Boat Cruise",        category: "Sightseeing", cost: 1200, time: "11:00 AM", openTime: "09:30 AM", closeTime: "07:00 PM", operatingHours: "09:30 AM – 07:00 PM", duration: "2.0 hrs", locationArea: "Interlaken West Pier", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
-    { name: "Harder Kulm Viewpoint",        category: "Nature",      cost: 2500, time: "10:00 AM", openTime: "09:10 AM", closeTime: "09:40 PM", operatingHours: "09:10 AM – 09:40 PM", duration: "2.0 hrs", locationArea: "Harder Funicular Station", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
-    { name: "Paragliding over Alps",        category: "Adventure",   cost: 12000,time: "01:00 PM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "1.5 hrs", locationArea: "Höhematte Landing Field", image: "https://images.unsplash.com/photo-1622738049484-1898e96ad7f3?w=400" },
-    { name: "Trummelbach Falls",            category: "Nature",      cost: 800,  time: "03:00 PM", openTime: "09:00 AM", closeTime: "05:00 PM", operatingHours: "09:00 AM – 05:00 PM", duration: "2.0 hrs", locationArea: "Lauterbrunnen Valley", image: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400" },
-    { name: "Schynige Platte Hike",         category: "Adventure",   cost: 3500, time: "08:00 AM", openTime: "08:00 AM", closeTime: "05:00 PM", operatingHours: "08:00 AM – 05:00 PM", duration: "4.0 hrs", locationArea: "Wilderswil Alpine Rail", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Swiss Chocolate Workshop",     category: "Food",        cost: 2000, time: "02:00 PM", openTime: "10:00 AM", closeTime: "06:30 PM", operatingHours: "10:00 AM – 06:30 PM", duration: "1.5 hrs", locationArea: "Höheweg Central Atelier", image: "https://images.unsplash.com/photo-1481391319764-ac6d90b0b54e?w=400" },
-    { name: "Lake Brienz Kayaking",         category: "Adventure",   cost: 2500, time: "10:00 AM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "2.5 hrs", locationArea: "Bönigen Beach", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
-    { name: "Lauterbrunnen Valley Walk",    category: "Nature",      cost: 0,    time: "09:00 AM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "2.5 hrs", locationArea: "Staubbach Falls Path", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400" },
-    { name: "Grindelwald Glacier Tour",     category: "Nature",      cost: 4000, time: "08:00 AM", openTime: "08:30 AM", closeTime: "05:00 PM", operatingHours: "08:30 AM – 05:00 PM", duration: "3.5 hrs", locationArea: "Grindelwald Terminal", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400" },
-    { name: "Swiss Folk Museum",            category: "Museum",      cost: 600,  time: "01:00 PM", openTime: "10:00 AM", closeTime: "05:00 PM", operatingHours: "10:00 AM – 05:00 PM", duration: "2.0 hrs", locationArea: "Ballenberg Open-Air", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Interlaken Old Town Stroll",   category: "Sightseeing", cost: 0,    time: "04:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.5 hrs", locationArea: "Unterseen Square", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" },
-  ],
-  rome: [
-    { name: "Colosseum & Roman Forum",          category: "Historical", cost: 1800, time: "10:00 AM", openTime: "08:30 AM", closeTime: "07:00 PM", operatingHours: "08:30 AM – 07:00 PM", duration: "3.0 hrs", locationArea: "Piazza del Colosseo", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "Vatican Museums & Sistine Chapel", category: "Museum",     cost: 2000, time: "02:00 PM", openTime: "08:00 AM", closeTime: "06:00 PM", operatingHours: "08:00 AM – 06:00 PM", duration: "3.5 hrs", locationArea: "Viale Vaticano", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
-    { name: "Trevi Fountain Visit",              category: "Sightseeing", cost: 0,   time: "10:00 AM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.0 hr",  locationArea: "Piazza di Trevi", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Borghese Gallery",                  category: "Museum",     cost: 1500, time: "09:00 AM", openTime: "09:00 AM", closeTime: "07:00 PM", operatingHours: "09:00 AM – 07:00 PM", duration: "2.5 hrs", locationArea: "Piazzale Scipione Borghese", image: "https://images.unsplash.com/photo-1560179406-1c6c60e0dc76?w=400" },
-    { name: "Pantheon Tour",                    category: "Historical", cost: 500,  time: "11:00 AM", openTime: "09:00 AM", closeTime: "07:00 PM", operatingHours: "09:00 AM – 07:00 PM", duration: "1.5 hrs", locationArea: "Piazza della Rotonda", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "Roman Street Food Walk",           category: "Food",       cost: 1800, time: "12:00 PM", openTime: "11:00 AM", closeTime: "10:00 PM", operatingHours: "11:00 AM – 10:00 PM", duration: "2.5 hrs", locationArea: "Jewish Ghetto & Trastevere", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
-    { name: "Trastevere Evening Walk",          category: "Sightseeing", cost: 0,   time: "07:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "2.0 hrs", locationArea: "Piazza di Santa Maria", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Piazza Navona",                    category: "Sightseeing", cost: 0,   time: "05:00 PM", openTime: "Open 24 Hours", closeTime: "Open 24 Hours", operatingHours: "Open 24 Hours", duration: "1.5 hrs", locationArea: "Historic Center", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-    { name: "St. Peter's Basilica",             category: "Historical", cost: 0,    time: "09:00 AM", openTime: "07:00 AM", closeTime: "07:00 PM", operatingHours: "07:00 AM – 07:00 PM", duration: "2.0 hrs", locationArea: "Piazza San Pietro", image: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400" },
-    { name: "Pasta Making Class",               category: "Food",       cost: 3500, time: "02:00 PM", openTime: "11:30 AM", closeTime: "09:00 PM", operatingHours: "11:30 AM – 09:00 PM", duration: "2.5 hrs", locationArea: "Via Cavour Culinary Loft", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400" },
-    { name: "Campo de' Fiori Market",           category: "Shopping",   cost: 1000, time: "08:00 AM", openTime: "07:00 AM", closeTime: "02:00 PM", operatingHours: "07:00 AM – 02:00 PM", duration: "2.0 hrs", locationArea: "Piazza Campo de' Fiori", image: "https://images.unsplash.com/photo-1525874684015-58379d421a52?w=400" },
-    { name: "Appian Way Cycling",               category: "Adventure",  cost: 1200, time: "09:00 AM", openTime: "09:00 AM", closeTime: "06:00 PM", operatingHours: "09:00 AM – 06:00 PM", duration: "3.0 hrs", locationArea: "Parco Regionale Appia Antica", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400" },
-  ],
-};
-
-// Resolve which city's activities to show
-const getActivitiesForCity = (city: string) => {
-  const key = city.toLowerCase();
-  if (key.includes('paris'))       return CITY_ACTIVITIES.paris;
-  if (key.includes('interlaken'))  return CITY_ACTIVITIES.interlaken;
-  if (key.includes('rome') || key.includes('roma')) return CITY_ACTIVITIES.rome;
-  return [
-    ...CITY_ACTIVITIES.paris,
-    ...CITY_ACTIVITIES.interlaken,
-    ...CITY_ACTIVITIES.rome,
-  ];
-};
-
+// Activities are fetched dynamically from the backend
 
 const ItineraryBuilder = () => {
   const { currentTrip, addSection, addActivity, saveItinerary } = useTrip();
   const navigate = useNavigate();
 
   const [isAddStopOpen, setIsAddStopOpen] = useState(false);
-  const [stopForm, setStopForm] = useState({ city: '', startDate: '', endDate: '', budget: '' });
+  const [stopForm, setStopForm] = useState({ city: '', cityId: '', startDate: '', endDate: '', budget: '' });
   const [stopError, setStopError] = useState('');
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [activitySearch, setActivitySearch] = useState('');
+  const [availableActivities, setAvailableActivities] = useState<ActivityTemplate[]>([]);
+  const [isFetchingActivities, setIsFetchingActivities] = useState(false);
+  const [isAutoPlanning, setIsAutoPlanning] = useState(false);
+
+  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
+  const [showDestinations, setShowDestinations] = useState(false);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+
+  useEffect(() => {
+    if (stopForm.city.length < 2) {
+      setDestinationSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsSearchingDest(true);
+      fetch(`/api/cities?search=${encodeURIComponent(stopForm.city)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.data && data.data.cities) {
+            setDestinationSuggestions(data.data.cities);
+          }
+        })
+        .catch(err => console.error("Failed to fetch destinations:", err))
+        .finally(() => setIsSearchingDest(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [stopForm.city]);
+
+  useEffect(() => {
+    if (!activeSectionId || !currentTrip) {
+      setAvailableActivities([]);
+      return;
+    }
+    
+    setIsFetchingActivities(true);
+    const section = currentTrip.sections.find(s => s.id === activeSectionId);
+    if (!section) return;
+
+    fetch(`/api/cities?search=${encodeURIComponent(section.city)}`)
+      .then(res => res.json())
+      .then(data => {
+        const city = data.data?.cities?.[0];
+        if (!city) {
+          setAvailableActivities([]);
+          return null;
+        }
+        return fetch(`/api/cities/${city.id}/activities`);
+      })
+      .then(res => (res ? res.json() : null))
+      .then(data => {
+        if (data && data.data && data.data.activities) {
+          // Map backend activities to frontend ActivityTemplate
+          const mapped = data.data.activities.map((a: any) => ({
+            name: a.name,
+            category: a.category,
+            cost: Number(a.cost),
+            image: a.image,
+            time: 'Flexible',
+            openTime: '09:00',
+            closeTime: '18:00',
+            operatingHours: '09:00 - 18:00',
+            duration: '2-3 hours',
+            locationArea: section.city
+          }));
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch activities:", err);
+        setAvailableActivities([]);
+      })
+      .finally(() => {
+        setIsFetchingActivities(false);
+      });
+  }, [activeSectionId, currentTrip]);
 
   if (!currentTrip) {
     return (
@@ -116,6 +132,7 @@ const ItineraryBuilder = () => {
 
     addSection({
       city: stopForm.city,
+      cityId: stopForm.cityId,
       country: '',
       startDate: stopForm.startDate,
       endDate: stopForm.endDate,
@@ -123,7 +140,7 @@ const ItineraryBuilder = () => {
     });
     
     setIsAddStopOpen(false);
-    setStopForm({ city: '', startDate: '', endDate: '', budget: '' });
+    setStopForm({ city: '', cityId: '', startDate: '', endDate: '', budget: '' });
   };
 
   const getSectionDays = (startDateStr: string, endDateStr: string) => {
@@ -190,41 +207,71 @@ const ItineraryBuilder = () => {
     });
   };
 
-  const handleAiAutoPlan = () => {
+  const handleAiAutoPlan = async () => {
     if (!currentTrip || currentTrip.sections.length === 0) return;
-
-    currentTrip.sections.forEach((section) => {
-      const cityPool = getActivitiesForCity(section.city);
-      const days = getSectionDays(section.startDate, section.endDate);
-      const existingNames = new Set(section.activities.map(a => a.name));
-      const available = cityPool.filter(a => !existingNames.has(a.name));
-
-      const TIME_SLOTS = ["09:30 AM", "02:00 PM", "06:30 PM"];
-      let actIdx = 0;
-
-      // Assign 2 to 3 activities per day across all section days
-      days.forEach((dayDate) => {
-        for (let slot = 0; slot < 2; slot++) {
-          if (actIdx < available.length) {
-            const act = available[actIdx];
-            addActivity(section.id, {
-              name: act.name,
-              category: act.category,
-              cost: act.cost,
-              date: dayDate,
-              time: TIME_SLOTS[slot] || act.time || "10:00 AM",
-              image: act.image,
-              duration: act.duration || "2.0 hrs",
-              openTime: act.openTime || "09:00 AM",
-              closeTime: act.closeTime || "07:00 PM",
-              operatingHours: act.operatingHours || "09:00 AM – 07:00 PM",
-              locationArea: act.locationArea || section.city
-            });
-            actIdx++;
+    
+    setIsAutoPlanning(true);
+    try {
+      for (const section of currentTrip.sections) {
+        let cityPool: ActivityTemplate[] = [];
+        try {
+          const cRes = await fetch(`/api/cities?search=${encodeURIComponent(section.city)}`);
+          const cData = await cRes.json();
+          const city = cData.data?.cities?.[0];
+          if (city) {
+            const aRes = await fetch(`/api/cities/${city.id}/activities`);
+            const aData = await aRes.json();
+            if (aData && aData.data && aData.data.activities) {
+              cityPool = aData.data.activities.map((a: any) => ({
+                name: a.name,
+                category: a.category,
+                cost: a.cost,
+                time: "10:00 AM",
+                openTime: "09:00 AM",
+                closeTime: "06:00 PM",
+                operatingHours: "09:00 AM - 06:00 PM",
+                duration: a.duration,
+                locationArea: section.city,
+                image: `https://source.unsplash.com/400x300/?${encodeURIComponent(a.category)},${encodeURIComponent(section.city)}`
+              }));
+            }
           }
+        } catch(e) {
+          console.error("Auto plan fetch failed for", section.city, e);
         }
-      });
-    });
+
+        const days = getSectionDays(section.startDate, section.endDate);
+        const existingNames = new Set(section.activities.map(a => a.name));
+        const available = cityPool.filter(a => !existingNames.has(a.name));
+
+        const TIME_SLOTS = ["09:30 AM", "02:00 PM", "06:30 PM"];
+        let actIdx = 0;
+
+        days.forEach((dayDate) => {
+          for (let slot = 0; slot < 2; slot++) {
+            if (actIdx < available.length) {
+              const act = available[actIdx];
+              addActivity(section.id, {
+                name: act.name,
+                category: act.category,
+                cost: act.cost,
+                date: dayDate,
+                time: TIME_SLOTS[slot] || act.time || "10:00 AM",
+                image: act.image,
+                duration: act.duration || "2.0 hrs",
+                openTime: act.openTime || "09:00 AM",
+                closeTime: act.closeTime || "07:00 PM",
+                operatingHours: act.operatingHours || "09:00 AM – 07:00 PM",
+                locationArea: act.locationArea || section.city
+              });
+              actIdx++;
+            }
+          }
+        });
+      }
+    } finally {
+      setIsAutoPlanning(false);
+    }
   };
 
   const handleSave = () => {
@@ -257,10 +304,11 @@ const ItineraryBuilder = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleAiAutoPlan}
-                className="bg-[#A88A4A] hover:bg-[#8F743B] text-white px-5 py-3 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 whitespace-nowrap"
+                disabled={isAutoPlanning}
+                className="bg-[#A88A4A] hover:bg-[#8F743B] text-white px-5 py-3 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
                 title="Automatically schedule activities evenly across all days with balanced time slots"
               >
-                ✨ AI Auto-Plan All Stops
+                ✨ {isAutoPlanning ? 'Planning...' : 'AI Auto-Plan All Stops'}
               </button>
               <button onClick={handleSave} className="bg-roamora-green hover:bg-roamora-greenHover text-white px-6 py-3 rounded-xl font-medium shadow-sm transition-colors whitespace-nowrap">
                 Save Itinerary
@@ -340,11 +388,33 @@ const ItineraryBuilder = () => {
             {stopError && <div className="mb-4 bg-red-50 text-red-600 text-sm font-medium p-3 rounded-xl">{stopError}</div>}
             
             <div className="flex flex-col gap-4 mb-8">
-              <div>
+              <div className="relative">
                 <label className="text-sm font-medium text-gray-700 ml-1">Destination</label>
                 <div className="relative mt-1">
                   <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input type="text" value={stopForm.city} onChange={e=>setStopForm({...stopForm, city: e.target.value})} placeholder="e.g. Paris, France" className="w-full bg-roamora-bg/50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-roamora-green" />
+                  <input type="text" value={stopForm.city} onChange={e=>{setStopForm({...stopForm, city: e.target.value}); setShowDestinations(true);}} placeholder="e.g. Paris, France" className="w-full bg-roamora-bg/50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-roamora-green" />
+                  
+                  {isSearchingDest && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-roamora-green/30 border-t-roamora-green rounded-full animate-spin" />
+                  )}
+
+                  {showDestinations && destinationSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {destinationSuggestions.map((dest: any) => (
+                        <div 
+                          key={dest.id}
+                          className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+                          onClick={() => {
+                            setStopForm({...stopForm, city: dest.cityName, cityId: dest.id});
+                            setShowDestinations(false);
+                          }}
+                        >
+                          <span className="font-medium text-gray-800">{dest.cityName}</span>
+                          <span className="text-gray-500 ml-2 text-xs">{dest.country}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -376,7 +446,7 @@ const ItineraryBuilder = () => {
       {/* Assign Activities Modal */}
       {activeSectionId && (() => {
         const activeSection = currentTrip.sections.find(s => s.id === activeSectionId);
-        const cityActivities = activeSection ? getActivitiesForCity(activeSection.city) : [];
+        const cityActivities = availableActivities;
         const alreadyAdded = new Set(activeSection?.activities.map(a => a.name) ?? []);
         const filtered = cityActivities.filter(
           a => !alreadyAdded.has(a.name) &&
@@ -414,9 +484,13 @@ const ItineraryBuilder = () => {
               </div>
 
               <div className="overflow-y-auto pr-1 flex flex-col gap-5">
-                {filtered.length === 0 ? (
+                {isFetchingActivities ? (
                   <div className="text-center py-10 text-gray-400 font-medium">
-                    {alreadyAdded.size === cityActivities.length
+                    Loading activities...
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-10 text-gray-400 font-medium">
+                    {alreadyAdded.size > 0 && alreadyAdded.size === cityActivities.length
                       ? 'All available activities have been added!'
                       : 'No activities match your search.'}
                   </div>
