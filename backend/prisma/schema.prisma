@@ -1,3 +1,9 @@
+// ============================================
+// BASE SCHEMA — extend this once the domain (problem statement) is known.
+// User model is battle-tested: role assignment locked down server-side
+// (see auth.controller.js — never trust role from client body).
+// ============================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,133 +18,32 @@ enum Role {
   USER
 }
 
-enum ActivityType {
-  SIGHTSEEING
-  FOOD
-  ADVENTURE
-  CULTURE
-  OTHER
-}
-
-enum ActivityCategory {
-  TRANSPORT
-  STAY
-  ACTIVITIES
-  MEALS
-}
-
 model User {
-  id           String   @id @default(uuid())
-  firstName    String
-  lastName     String
-  username     String   @unique
-  email        String   @unique
-  phone        String?
-  city         String?
-  country      String?
-  photo        String?
-  passwordHash String
-  language     String   @default("en")
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  trips Trip[]
-
-  @@index([email])
-  @@index([username])
-}
-
-model Trip {
-  id          String    @id @default(uuid())
-  userId      String
-  name        String
-  description String?
-  coverPhoto  String?
-  startDate   DateTime
-  endDate     DateTime
-  isPublic    Boolean   @default(false)
-  shareSlug   String?   @unique
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sections Section[]
-
-  @@index([userId])
-  @@index([shareSlug])
-  @@index([isPublic])
-}
-
-model Section {
   id        String   @id @default(uuid())
-  tripId    String
-  cityId    String
-  order     Int
-  startDate DateTime
-  endDate   DateTime
-  budget    Decimal  @db.Decimal(10, 2)
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER) // never set from client input directly
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  trip              Trip              @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  city              City              @relation(fields: [cityId], references: [id])
-  sectionActivities SectionActivity[]
-
-  @@index([tripId])
-  @@index([cityId])
+  @@index([email])
 }
 
-model City {
-  id         String   @id @default(uuid())
-  name       String
-  country    String
-  costIndex  Float    @default(1.0)
-  popularity Int      @default(0)
-  imageUrl   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  sections   Section[]
-  activities Activity[]
-
-  @@index([name])
-  @@index([country])
-}
-
-model Activity {
-  id              String           @id @default(uuid())
-  cityId          String
-  name            String
-  type            ActivityType
-  category        ActivityCategory
-  cost            Decimal          @db.Decimal(10, 2)
-  durationMinutes Int
-  description     String?
-  imageUrl        String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  city              City              @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  sectionActivities SectionActivity[]
-
-  @@index([cityId])
-  @@index([type])
-  @@index([category])
-}
-
-model SectionActivity {
-  id            String   @id @default(uuid())
-  sectionId     String
-  activityId    String
-  scheduledDate DateTime
-  costSnapshot  Decimal  @db.Decimal(10, 2)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  section  Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-
-  @@index([sectionId])
-  @@index([activityId])
-}
+// ============================================
+// EXAMPLE PATTERN — compound unique constraint done right
+// (last time a naive @@unique crashed on a legit second insert
+// because it didn't scope to the right combination of fields).
+// Delete this model once you add real domain models; keep the
+// pattern in mind: @@unique([fieldA, fieldB]) only on the fields
+// that TRULY must be unique together, not entity-wide.
+// ============================================
+// model Example {
+//   id        String   @id @default(uuid())
+//   userId    String
+//   itemId    String
+//   status    String
+//   createdAt DateTime @default(now())
+//
+//   @@unique([userId, itemId])
+// }
