@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import { useCommunity } from '@/hooks/useCommunity';
 import {
   Globe, Search, MapPin, Calendar, Wallet, ArrowRight,
-  Sparkles, Users, TrendingUp, Filter, SortAsc
+  Sparkles, Users, TrendingUp, Filter, SortAsc, Clock, Tag
 } from 'lucide-react';
 
 type SortOption = 'newest' | 'oldest' | 'budget-high' | 'budget-low';
@@ -54,6 +54,10 @@ function formatBudget(n: number) {
   return `₹${n}`;
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
 const Community = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -63,6 +67,7 @@ const Community = () => {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('All');
+  const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
 
   // Highlighted id — if coming from BudgetView share
   const highlightedId = searchParams.get('highlight');
@@ -115,10 +120,9 @@ const Community = () => {
     <div className="min-h-screen bg-roamora-bg text-roamora-text font-body">
       <Header />
 
-      <main className="px-4 md:px-8 pb-24 max-w-6xl mx-auto mt-6">
-
+      <main className="px-4 md:px-8 pb-24 max-w-7xl mx-auto mt-6">
         {/* ── Hero banner ── */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-roamora-green via-emerald-500 to-teal-600 p-8 md:p-12 mb-10 text-white">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-roamora-green via-emerald-500 to-teal-600 p-8 md:p-12 mb-10 text-white shadow-md">
           <div className="absolute inset-0 opacity-10"
             style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }}
           />
@@ -126,13 +130,13 @@ const Community = () => {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Globe size={22} className="opacity-80" />
-                <span className="text-sm font-semibold uppercase tracking-widest opacity-80">Community</span>
+                <span className="text-sm font-semibold uppercase tracking-widest opacity-80">Community Hub</span>
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-2 leading-tight">
-                Discover Itineraries
+                Discover & Explore Shared Itineraries
               </h1>
               <p className="text-emerald-100 text-lg max-w-xl">
-                Browse travel plans shared by fellow globetrotters. Get inspired and plan your next adventure.
+                Browse travel plans shared by fellow globetrotters. Inspect complete day-by-day activities, stays & budget breakdowns.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-4 shrink-0">
@@ -153,10 +157,10 @@ const Community = () => {
 
         {/* ── "Just Shared" highlight banner ── */}
         {highlightedId && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 mb-6 flex items-center gap-3">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 mb-6 flex items-center gap-3 shadow-sm">
             <Sparkles size={20} className="text-roamora-green shrink-0" />
-            <span className="text-emerald-800 font-medium">
-              Your itinerary was just shared with the community! It's highlighted below. 🎉
+            <span className="text-emerald-800 font-semibold text-sm">
+              Your itinerary was just shared with the community! It's highlighted below with full activity stream & budget details. 🎉
             </span>
           </div>
         )}
@@ -241,11 +245,13 @@ const Community = () => {
               const flag = getFlag(trip);
               const isHighlighted = ct.id === highlightedId;
               const isMyTrip = ct.userId === 'me';
+              const isExpanded = expandedTripId === ct.id;
+              const allActs = trip.sections.flatMap(s => s.activities);
 
               return (
                 <div
                   key={ct.id}
-                  className={`group bg-white rounded-3xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                  className={`group bg-white rounded-3xl shadow-sm border overflow-hidden transition-all duration-300 hover:shadow-xl ${
                     isHighlighted ? 'ring-2 ring-roamora-green border-roamora-green' : 'border-gray-100'
                   }`}
                 >
@@ -276,13 +282,15 @@ const Community = () => {
                   </div>
 
                   {/* Card body */}
-                  <div className="p-6 pt-4">
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-4">
-                      {trip.description}
-                    </p>
+                  <div className="p-6 pt-4 space-y-4">
+                    {trip.description && (
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                        {trip.description}
+                      </p>
+                    )}
 
                     {/* Meta row */}
-                    <div className="flex items-center gap-4 mb-4 text-sm">
+                    <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1.5 text-gray-600">
                         <Calendar size={14} className="text-roamora-green" />
                         <span className="font-medium">{days} {days === 1 ? 'day' : 'days'}</span>
@@ -293,9 +301,19 @@ const Community = () => {
                       </div>
                     </div>
 
+                    {/* City Stops Strip */}
+                    <div className="bg-[#FAF8F5] border border-[#E8E2D5] p-2.5 rounded-xl text-xs flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-gray-500 uppercase text-[10px]">City Stops:</span>
+                      {trip.sections.map((sec, i) => (
+                        <span key={sec.id} className="font-bold text-[#173B2B]">
+                          📍 {sec.city}{i < trip.sections.length - 1 ? ' → ' : ''}
+                        </span>
+                      ))}
+                    </div>
+
                     {/* Category chips */}
                     {cats.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div className="flex flex-wrap gap-1.5">
                         {cats.map(cat => (
                           <span
                             key={cat}
@@ -307,11 +325,40 @@ const Community = () => {
                       </div>
                     )}
 
-                    {/* Sections summary */}
-                    <div className="text-xs text-gray-400 font-medium mb-4">
-                      {trip.sections.length} section{trip.sections.length !== 1 ? 's' : ''} ·{' '}
-                      {trip.sections.reduce((s, sec) => s + sec.activities.length, 0)} activities
-                    </div>
+                    {/* In-Card Full Itinerary Stream Toggle */}
+                    <button
+                      onClick={() => setExpandedTripId(prev => prev === ct.id ? null : ct.id)}
+                      className="w-full bg-gray-50 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-200 text-gray-700 text-xs font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <Sparkles size={13} className="text-roamora-green" />
+                      {isExpanded ? 'Hide Itinerary Stream' : `View Whole Itinerary (${allActs.length} Sights)`}
+                    </button>
+
+                    {/* In-Card Expanded Itinerary Stream */}
+                    {isExpanded && (
+                      <div className="space-y-3 pt-2 border-t border-gray-100 max-h-64 overflow-y-auto pr-1">
+                        <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
+                          Whole Itinerary Activity Schedule
+                        </span>
+                        {allActs.length === 0 ? (
+                          <p className="text-xs text-gray-400 italic">No activities planned in this itinerary.</p>
+                        ) : (
+                          allActs.map((act, i) => (
+                            <div key={act.id || i} className="bg-gray-50 p-2.5 rounded-xl border border-gray-100 flex items-center justify-between gap-2 text-xs">
+                              <div>
+                                <div className="font-semibold text-gray-900">{act.name}</div>
+                                <div className="text-[10px] text-gray-400">
+                                  {act.date ? formatDate(act.date) : 'Day Activity'} · ⏱ {act.time || '10:00 AM'}
+                                </div>
+                              </div>
+                              <span className="font-bold text-[#173B2B] shrink-0">
+                                {Number(act.cost) === 0 ? 'Free' : `₹${Number(act.cost).toLocaleString('en-IN')}`}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
 
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -322,7 +369,7 @@ const Community = () => {
                         onClick={() => navigate(`/community/view?id=${ct.id}`)}
                         className="flex items-center gap-1.5 text-sm font-semibold text-roamora-green hover:gap-2.5 transition-all"
                       >
-                        View Itinerary
+                        Full Itinerary Page
                         <ArrowRight size={15} />
                       </button>
                     </div>
